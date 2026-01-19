@@ -3,7 +3,7 @@
 import { Database, Zap, Users, Shield, ArrowRight, Star, Check } from 'lucide-react';
 import Link from 'next/link';
 
-export default function Home() {
+export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white">
       {/* Hero Section */}
@@ -33,7 +33,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
             <Link 
-              href="/signin"
+              href="/"
               className="group px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/50 hover:shadow-blue-500/70 hover:scale-105"
             >
               Start Designing
@@ -209,7 +209,7 @@ export default function Home() {
                 Join thousands of developers designing better databases
               </p>
               <Link 
-                href="/signin"
+                href="/"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-300 hover:scale-105 shadow-xl"
               >
                 Start Designing for Free
