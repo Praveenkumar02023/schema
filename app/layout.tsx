@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SchemaFlow - Visual Database Design",
-  description: "Create, visualize, and manage your database schemas with an intuitive drag-and-drop interface.",
+  title: "DrawDB - Visual Database Design",
+  description: "Visualize Your Database, Data Modeling tool for Team Collaboration.",
 };
 
 export default function RootLayout({

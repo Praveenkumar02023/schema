@@ -36,10 +36,10 @@ export default function SignInPage() {
             </svg>
             Back to home
           </Link>
-          
+
           <div className="flex items-center justify-center gap-3 mb-4 mt-8">
             <Database size={32} className="text-blue-400" />
-            <span className="text-3xl font-bold">SchemaFlow</span>
+            <span className="text-3xl font-bold">DrawDB</span>
           </div>
           <p className="text-zinc-400">Sign in to start designing</p>
         </div>
