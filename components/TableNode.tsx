@@ -15,139 +15,139 @@ export default memo(function TableNode({ data, selected }: NodeProps) {
   const table = data.table as Table;
 
   if (!table) return (
-    <div className="p-4 border-2 border-red-500 bg-red-50 text-red-500 rounded-lg">
-      Error
+    <div className="p-4 border border-red-500/50 bg-red-500/10 text-red-400 rounded-lg text-xs font-mono">
+      Error: Table data missing
     </div>
   );
 
   return (
-    // OPTIMIZATION: 
-    // 1. Removed 'transition-all' from the root div (causes drag lag)
-    // 2. Added 'will-change-transform' (promotes to GPU layer)
-    // 3. Added 'backface-hidden' (prevents flickering)
     <div
       className={cn(
-        "flex flex-col min-w-[300px] bg-white dark:bg-zinc-950 rounded-xl overflow-hidden backface-hidden will-change-transform",
-        "border",
+        "flex flex-col min-w-[280px] rounded-xl overflow-hidden backdrop-blur-md will-change-transform backface-hidden transition-all duration-300",
+        // Base Style
+        "bg-zinc-900/90 border-zinc-800",
+        // Selection State
         selected
-          ? "border-zinc-400 dark:border-zinc-600 shadow-xl shadow-zinc-500/10 ring-1 ring-zinc-400 dark:ring-zinc-600"
-          : "border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700"
+          ? "border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.2)] ring-1 ring-blue-500/20 transform scale-[1.01]"
+          : "border hover:border-zinc-700 hover:shadow-xl shadow-black/20"
       )}
     >
       {/* Header */}
       <div className={cn(
-        "flex items-center justify-between px-4 py-3 border-b transition-colors",
+        "flex items-center justify-between px-4 py-3 border-b transition-colors bg-gradient-to-r",
         selected
-          ? "bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800"
-          : "bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-100 dark:border-zinc-800"
+          ? "from-blue-500/10 to-transparent border-blue-500/20"
+          : "from-white/[0.03] to-transparent border-white/[0.05]"
       )}>
         <div className="flex items-center gap-3">
           <div className={cn(
-            "flex items-center justify-center w-8 h-8 rounded-lg border",
+            "flex items-center justify-center w-8 h-8 rounded-lg shadow-inner border transition-colors",
             selected
-              ? "bg-zinc-200 text-zinc-700 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700"
-              : "bg-white text-zinc-500 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-700"
+              ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+              : "bg-zinc-800 text-zinc-500 border-white/5"
           )}>
-            <Database size={16} strokeWidth={2} />
+            <Database size={14} strokeWidth={2.5} />
           </div>
 
-          <div className="flex flex-col">
-            <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 leading-tight">
+          <div className="flex flex-col gap-0.5">
+            <span className={cn(
+              "font-bold text-sm leading-none tracking-tight",
+              selected ? "text-white" : "text-zinc-200"
+            )}>
               {table.name}
             </span>
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">
+            <span className="text-[10px] text-zinc-500 font-mono">
               {table.columns.length} columns
             </span>
           </div>
         </div>
-
-        <button className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors rounded hover:bg-zinc-200/50 dark:hover:bg-zinc-800">
-          <MoreVertical size={16} />
-        </button>
       </div>
 
-      {/* Columns */}
-      <div className="flex flex-col bg-white dark:bg-zinc-950">
-        {table.columns.map((col) => (
+      {/* Columns List */}
+      <div className="flex flex-col bg-transparent">
+        {table.columns.map((col, index) => (
           <div
             key={col.id}
-            className="group/row relative flex items-center justify-between px-4 py-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors border-b last:border-0 border-zinc-50 dark:border-zinc-900"
+            className={cn(
+              "group/row relative flex items-center justify-between px-4 py-2 border-b last:border-0 border-white/[0.02] transition-colors",
+              "hover:bg-white/[0.04]"
+            )}
           >
-            {/* Left Handle - Outside column */}
-            <Handle
-              type="target"
-              position={Position.Left}
-              id={`${col.id}-target`}
-              style={{
-                width: '8px',
-                height: '8px',
-                background: '#60a5fa',
-                border: '2px solid white',
-                borderRadius: '50%',
-                left: '-8px', // Further outside
-                top: '50%',
-                transform: 'translateY(-50%)',
-                cursor: 'crosshair',
-                zIndex: 100, // Much higher z-index
-              }}
-            />
+            {/* Left Handle - Invisible hit area, visible dot */}
+            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center z-20">
+              <Handle
+                type="target"
+                position={Position.Left}
+                id={`${col.id}-target`}
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  background: '#3b82f6',
+                  border: '2px solid #18181b', // Matches dark bg
+                  borderRadius: '50%',
+                  opacity: selected ? 1 : 0, // Show on selection or hover
+                  transition: 'opacity 0.2s',
+                }}
+                className="!relative !left-0 !top-0 !transform-none group-hover/row:!opacity-100"
+              />
+            </div>
 
-            <div className="flex items-center gap-2.5 overflow-hidden flex-1">
+            {/* Column Content */}
+            <div className="flex items-center gap-2.5 overflow-hidden flex-1 pl-1">
               <div className="w-4 flex justify-center shrink-0">
                 {col.isPrimaryKey ? (
-                  <Key size={12} className="text-amber-500 dark:text-amber-400" />
+                  <Key size={10} className="text-amber-400" />
                 ) : (
-                  <div className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                  <div className="w-1 h-1 rounded-full bg-zinc-700 group-hover/row:bg-zinc-500 transition-colors" />
                 )}
               </div>
-              
+
               <span className={cn(
-                "text-sm truncate font-medium",
-                col.isPrimaryKey 
-                  ? "text-zinc-900 dark:text-zinc-100" 
-                  : "text-zinc-600 dark:text-zinc-400"
+                "text-[13px] truncate font-medium transition-colors",
+                col.isPrimaryKey ? "text-amber-100" : "text-zinc-400 group-hover/row:text-zinc-200"
               )}>
                 {col.name}
               </span>
             </div>
 
+            {/* Type Badge */}
             <div className="flex items-center gap-2 pl-4">
-              <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-500">
+              <span className="text-[9px] font-mono uppercase text-zinc-600 bg-zinc-900/50 px-1.5 py-0.5 rounded border border-white/5">
                 {col.type}
               </span>
-              
+
               {!col.isNullable && (
-                <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">
-                  NN
+                <span className="text-[8px] font-bold text-red-400/80 tracking-wider" title="Required">
+                  *
                 </span>
               )}
             </div>
 
-            {/* Right Handle - Outside column */}
-            <Handle
-              type="source"
-              position={Position.Right}
-              id={`${col.id}-source`}
-              style={{
-                width: '8px',
-                height: '8px',
-                background: '#60a5fa',
-                border: '2px solid white',
-                borderRadius: '50%',
-                right: '-8px', // Further outside
-                top: '50%',
-                transform: 'translateY(-50%)',
-                cursor: 'crosshair',
-                zIndex: 100, // Much higher z-index
-              }}
-            />
+            {/* Right Handle */}
+            <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center z-20">
+              <Handle
+                type="source"
+                position={Position.Right}
+                id={`${col.id}-source`}
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  background: '#3b82f6',
+                  border: '2px solid #18181b',
+                  borderRadius: '50%',
+                  opacity: selected ? 1 : 0,
+                  transition: 'opacity 0.2s',
+                }}
+                className="!relative !left-0 !top-0 !transform-none group-hover/row:!opacity-100"
+              />
+            </div>
           </div>
         ))}
 
         {table.columns.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-8 text-zinc-400">
-            <Columns size={32} className="mb-2 opacity-20" />
-            <p className="text-xs italic">No columns defined</p>
+          <div className="flex flex-col items-center justify-center py-6 text-zinc-600">
+            <Columns size={24} className="mb-2 opacity-20" />
+            <p className="text-[10px] italic">No columns</p>
           </div>
         )}
       </div>

@@ -1,35 +1,42 @@
 "use client";
 import { useSchemaStore } from '@/store/useSchemaStore';
 import { Column, ColumnType } from '@/lib/types';
-import { 
-  X, 
-  Plus, 
-  Trash2, 
-  Key, 
+import {
+  X,
+  Plus,
+  Trash2,
+  Key,
   Database,
   Type,
-  ChevronDown
+  ChevronDown,
+  Settings,
+  MoreHorizontal,
+  Search
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useState } from 'react';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
-const COLUMN_TYPES: ColumnType[] = ['INT', 'VARCHAR', 'BOOLEAN', 'DATE', 'JSON', 'TEXT'];
+const COLUMN_TYPES: ColumnType[] = ['INT', 'VARCHAR', 'BOOLEAN', 'DATE', 'JSON', 'TEXT', 'UUID', 'TIMESTAMP'];
 
 export default function TableInspector() {
-  const { 
-    selectedTableId, 
-    tables, 
-    updateTableName, 
-    addColumn, 
-    updateColumn, 
-    deleteColumn, 
-    deleteTable, 
-    setSelectedTableId 
+  const {
+    selectedTableId,
+    tables,
+    updateTableName,
+    addColumn,
+    updateColumn,
+    deleteColumn,
+    deleteTable,
+    setSelectedTableId
   } = useSchemaStore();
+
+  const [activeTab, setActiveTab] = useState<'columns' | 'settings'>('columns');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const selectedTable = tables.find((t) => t.id === selectedTableId);
 
@@ -46,149 +53,208 @@ export default function TableInspector() {
     addColumn(selectedTable.id, newCol);
   };
 
+  const filteredColumns = selectedTable.columns.filter(col =>
+    col.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    // Fixed container: Hardcoded dark colors (zinc-950), sharp borders, reduced radius
-    <aside className="absolute right-4 top-4 bottom-4 w-[400px] flex flex-col bg-[#09090b] border border-zinc-800 rounded-md shadow-2xl overflow-hidden z-50 text-zinc-100 font-sans">
-      
+    <aside className="absolute right-6 top-6 bottom-6 w-[420px] flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden z-20 animate-in slide-in-from-right-8 duration-500">
+
       {/* --- Header --- */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-950">
-        <div className="flex items-center gap-2">
-          <Database size={14} className="text-zinc-400" />
-          <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">
-            Table Properties
-          </span>
+      <div className="flex-shrink-0 px-6 py-5 border-b border-white/5 bg-white/5 relative overflow-hidden">
+        {/* Background Glow */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+        <div className="flex items-center justify-between mb-4 relative z-10">
+          <div className="flex items-center gap-2 text-zinc-400">
+            <div className="p-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
+              <Database size={14} className="text-blue-400" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">
+              Table Inspector
+            </span>
+          </div>
+          <button
+            onClick={() => setSelectedTableId(null)}
+            className="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-full"
+          >
+            <X size={16} />
+          </button>
         </div>
-        <button 
-          onClick={() => setSelectedTableId(null)}
-          className="text-zinc-500 hover:text-zinc-100 transition-colors"
+
+        {/* Title Input */}
+        <div className="relative z-10 group">
+          <input
+            type="text"
+            value={selectedTable.name}
+            onChange={(e) => updateTableName(selectedTable.id, e.target.value)}
+            className="w-full bg-transparent text-2xl font-bold text-white placeholder-zinc-600 focus:outline-none focus:ring-0 border-b border-transparent group-hover:border-white/10 focus:border-blue-500 transition-all pb-1 placeholder:opacity-50"
+            placeholder="Table Name"
+          />
+        </div>
+      </div>
+
+      {/* --- Tabs --- */}
+      <div className="flex items-center px-6 border-b border-white/5 bg-white/[0.02]">
+        <button
+          onClick={() => setActiveTab('columns')}
+          className={cn(
+            "px-4 py-3 text-xs font-medium border-b-2 transition-all",
+            activeTab === 'columns'
+              ? "border-blue-500 text-blue-400"
+              : "border-transparent text-zinc-500 hover:text-zinc-300"
+          )}
         >
-          <X size={16} />
+          Columns <span className="ml-1 opacity-50 text-[10px]">{selectedTable.columns.length}</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={cn(
+            "px-4 py-3 text-xs font-medium border-b-2 transition-all",
+            activeTab === 'settings'
+              ? "border-blue-500 text-blue-400"
+              : "border-transparent text-zinc-500 hover:text-zinc-300"
+          )}
+        >
+          Settings
         </button>
       </div>
 
-      {/* --- Content --- */}
-      <div className="flex-1 overflow-y-auto no-scrollbar bg-[#0c0c0e]">
-        <div className="p-4 space-y-6">
-          
-          {/* Table Name Input */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-zinc-500 uppercase">Table Name</label>
-            <input
-              type="text"
-              value={selectedTable.name}
-              onChange={(e) => updateTableName(selectedTable.id, e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 text-sm px-3 py-2 rounded-md focus:outline-none focus:border-zinc-600 focus:bg-black transition-all font-medium"
-              placeholder="Enter table name..."
-            />
-          </div>
+      {/* --- Content Area --- */}
+      <div className="flex-1 overflow-y-auto no-scrollbar relative">
 
-          {/* Columns Header */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-               <span className="text-[10px] font-bold text-zinc-500 uppercase">
-                 Columns ({selectedTable.columns.length})
-               </span>
+        {activeTab === 'columns' && (
+          <div className="p-4 space-y-4">
+
+            {/* Search */}
+            <div className="relative group">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-blue-400 transition-colors" />
+              <input
+                type="text"
+                placeholder="Find column..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-black/20 border border-white/5 rounded-xl py-2.5 pl-9 pr-4 text-xs text-zinc-300 focus:outline-none focus:border-blue-500/50 focus:bg-black/40 transition-all placeholder:text-zinc-600"
+              />
             </div>
 
-            {/* Column List */}
-            <div className="flex flex-col gap-px bg-zinc-800 border border-zinc-800 rounded-md overflow-hidden">
-              {selectedTable.columns.map((col) => (
-                <div 
-                  key={col.id} 
-                  className="group grid grid-cols-[1fr,auto] items-center gap-3 p-2 bg-zinc-950 hover:bg-zinc-900 transition-colors"
+            {/* List */}
+            <div className="space-y-2">
+              {filteredColumns.map((col) => (
+                <div
+                  key={col.id}
+                  className="group relative flex items-center gap-3 p-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-white/10 rounded-xl transition-all duration-200"
                 >
-                  
-                  {/* Left Side: Name & Type */}
-                  <div className="flex flex-col gap-1.5 min-w-0">
+
+                  {/* Left Icon (PK or Type) */}
+                  <div className={cn(
+                    "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center border transition-colors",
+                    col.isPrimaryKey
+                      ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                      : "bg-zinc-800/50 border-white/5 text-zinc-500"
+                  )}>
+                    {col.isPrimaryKey ? <Key size={14} /> : <Type size={14} />}
+                  </div>
+
+                  {/* Inputs */}
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <input
+                      type="text"
+                      value={col.name}
+                      onChange={(e) => updateColumn(selectedTable.id, col.id, { name: e.target.value })}
+                      className="bg-transparent text-sm font-medium text-zinc-200 placeholder-zinc-600 focus:outline-none w-full"
+                      placeholder="column_name"
+                    />
+
+                    {/* Small Type Selector Row */}
                     <div className="flex items-center gap-2">
-                      <div className="text-zinc-600">
-                        <Type size={12} />
+                      <div className="relative text-[10px] uppercase font-mono tracking-tight text-blue-400 max-w-[80px]">
+                        <select
+                          value={col.type}
+                          onChange={(e) => updateColumn(selectedTable.id, col.id, { type: e.target.value as ColumnType })}
+                          className="w-full appearance-none bg-transparent hover:text-blue-300 focus:outline-none cursor-pointer py-0.5 truncate"
+                        >
+                          {COLUMN_TYPES.map(t => <option key={t} value={t} className="bg-zinc-900 text-zinc-300">{t}</option>)}
+                        </select>
                       </div>
-                      <input
-                        type="text"
-                        value={col.name}
-                        onChange={(e) => updateColumn(selectedTable.id, col.id, { name: e.target.value })}
-                        className="bg-transparent text-sm font-medium text-zinc-200 placeholder-zinc-600 focus:outline-none focus:text-white w-full"
-                        placeholder="column_name"
-                      />
-                    </div>
-                    
-                    {/* Type Selector (Monospace for tech feel) */}
-                    <div className="relative flex items-center w-full">
-                       <select
-                        value={col.type}
-                        onChange={(e) => updateColumn(selectedTable.id, col.id, { type: e.target.value as ColumnType })}
-                        className="appearance-none bg-transparent text-[10px] font-mono text-zinc-500 hover:text-zinc-300 focus:outline-none focus:text-zinc-100 cursor-pointer w-full uppercase tracking-tight py-0.5"
-                      >
-                        {COLUMN_TYPES.map(t => <option key={t} value={t} className="bg-zinc-900 text-zinc-200">{t}</option>)}
-                      </select>
-                      <ChevronDown size={10} className="absolute right-0 text-zinc-600 pointer-events-none" />
                     </div>
                   </div>
 
-                  {/* Right Side: Toggles & Actions */}
-                  <div className="flex items-center gap-1">
-                    
-                    {/* PK Toggle - Monochrome Invert on Active */}
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 opacity-100 sm:opacity-40 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => updateColumn(selectedTable.id, col.id, { isPrimaryKey: !col.isPrimaryKey })}
                       className={cn(
-                        "h-6 px-1.5 rounded-sm text-[9px] font-bold border transition-all flex items-center justify-center gap-1",
-                        col.isPrimaryKey 
-                          ? "bg-zinc-100 border-zinc-100 text-black" // Active: White bg, Black text
-                          : "bg-transparent border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400"
+                        "p-1.5 rounded-md transition-all",
+                        col.isPrimaryKey
+                          ? "text-amber-500 bg-amber-500/10"
+                          : "text-zinc-600 hover:text-zinc-300 hover:bg-white/5"
                       )}
-                      title="Primary Key"
+                      title="Toggle Primary Key"
                     >
-                      <Key size={8} className={cn(col.isPrimaryKey ? "fill-black" : "fill-transparent")} />
-                      PK
+                      <Key size={14} />
                     </button>
-
-                    {/* Nullable Toggle */}
                     <button
                       onClick={() => updateColumn(selectedTable.id, col.id, { isNullable: !col.isNullable })}
                       className={cn(
-                        "h-6 px-1.5 rounded-sm text-[9px] font-bold border transition-all flex items-center justify-center",
-                        !col.isNullable 
-                          ? "bg-zinc-800 border-zinc-700 text-zinc-300" // Required (Active state visually)
-                          : "bg-transparent border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400"
+                        "px-1.5 py-1 rounded-md text-[9px] font-bold border transition-all w-10 text-center",
+                        !col.isNullable // Required
+                          ? "bg-red-500/10 border-red-500/20 text-red-500"
+                          : "bg-transparent border-zinc-700 text-zinc-600 hover:text-zinc-400"
                       )}
                       title="Toggle Nullable"
                     >
                       {!col.isNullable ? "REQ" : "NULL"}
                     </button>
 
-                    <div className="w-px h-4 bg-zinc-800 mx-1" />
-
-                    <button 
+                    <button
                       onClick={() => deleteColumn(selectedTable.id, col.id)}
-                      className="p-1.5 text-zinc-600 hover:text-zinc-100 hover:bg-zinc-800 rounded-sm transition-colors"
+                      className="p-1.5 text-zinc-600 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
                     >
-                      <Trash2 size={12} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
+
                 </div>
               ))}
             </div>
 
             <button
               onClick={handleAddColumn}
-              className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 border border-dashed border-white/10 hover:border-white/20 hover:bg-white/5 rounded-xl text-xs font-medium text-zinc-500 hover:text-zinc-300 transition-all flex items-center justify-center gap-2 group"
             >
-              <Plus size={12} /> Add Column
+              <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Plus size={12} />
+              </div>
+              Add New Column
             </button>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* --- Footer --- */}
-      <div className="p-4 border-t border-zinc-800 bg-zinc-950">
-        <button
-          onClick={() => deleteTable(selectedTable.id)}
-          className="w-full flex items-center justify-center gap-2 py-2 border border-zinc-800 hover:border-zinc-700 text-zinc-500 hover:text-zinc-300 bg-transparent hover:bg-zinc-900 rounded-md text-xs font-medium transition-all"
-        >
-          Delete Table
-        </button>
+        {activeTab === 'settings' && (
+          <div className="p-6 space-y-6">
+            <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-red-500/10 rounded-lg">
+                  <Trash2 size={16} className="text-red-500" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-red-100">Delete Table</h4>
+                  <p className="text-xs text-red-400/60 mt-1 leading-relaxed">
+                    This action cannot be undone. All data and relationships associated with this table will be removed.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => deleteTable(selectedTable.id)}
+                className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-xs font-bold uppercase rounded-lg transition-colors"
+              >
+                Delete Table
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </aside>
   );

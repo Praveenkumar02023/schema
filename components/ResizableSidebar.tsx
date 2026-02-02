@@ -5,40 +5,32 @@ import { useSchemaStore } from '../store/useSchemaStore';
 import {
   Plus,
   Table as TableIcon,
-  FileCode,
-  FileJson,
-  Upload,
-  Database,
-  ChevronRight,
-  Settings2,
-  GripVertical
+  Search,
+  GripVertical,
+  MoreVertical,
+  Layers
 } from 'lucide-react';
-import { exportToJSON, generateSQL } from '@/lib/exporter';
-import SidebarTableEditor from './SidebarTableEditor';
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-// Utility for cleaner class merging
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const MIN_WIDTH = 260;
-const MAX_WIDTH = 600;
-const DEFAULT_WIDTH = 300;
+const MIN_WIDTH = 240;
+const MAX_WIDTH = 500;
+const DEFAULT_WIDTH = 280;
 
 export default function ResizableSidebar() {
   const [width, setWidth] = useState(DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const sidebarRef = useRef<HTMLElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const tables = useSchemaStore((state) => state.tables);
-  const relations = useSchemaStore((state) => state.relations);
   const addTable = useSchemaStore((state) => state.addTable);
   const setSelectedTableId = useSchemaStore((state) => state.setSelectedTableId);
   const selectedTableId = useSchemaStore((state) => state.selectedTableId);
-  const setSchema = useSchemaStore((state) => state.setSchema);
 
   // --- Resizing Logic ---
   const startResizing = () => setIsResizing(true);
@@ -83,191 +75,98 @@ export default function ResizableSidebar() {
     setSelectedTableId(id);
   };
 
-  const handleExportJSON = () => {
-    const json = exportToJSON({ tables, relations });
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'drawdb_dump.json';
-    a.click();
-  };
-
-  const handleExportSQL = () => {
-    const sql = generateSQL({ tables, relations });
-    const blob = new Blob([sql], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'drawdb.sql';
-    a.click();
-  };
-
-  const handleImportClick = () => fileInputRef.current?.click();
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const json = JSON.parse(ev.target?.result as string);
-        if (json.tables && Array.isArray(json.tables)) {
-          setSchema(json);
-        } else {
-          alert('Invalid schema file');
-        }
-      } catch (err) {
-        alert('Failed to parse JSON');
-      }
-    };
-    reader.readAsText(file);
-  };
+  const filteredTables = tables.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <aside
       ref={sidebarRef}
-      className="relative h-full flex flex-col bg-[#09090b] border-r border-zinc-800 text-zinc-400 z-20 shadow-2xl group/sidebar"
+      className="relative h-full flex flex-col bg-[#09090b] border-r border-zinc-800 text-zinc-400 z-10 group/sidebar"
       style={{ width: `${width}px` }}
     >
 
-      {/* --- Header --- */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-800 bg-[#09090b] shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 bg-zinc-100 rounded-md text-zinc-950 shadow-inner">
-            <Database size={16} strokeWidth={2.5} />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-sm font-bold text-zinc-100 tracking-tight leading-none">DrawDB</h1>
-            <p className="text-[10px] text-zinc-500 font-mono mt-1">v1.0.0-beta</p>
-          </div>
-        </div>
-        <button className="p-1.5 hover:bg-zinc-900 rounded-md transition-colors text-zinc-500 hover:text-zinc-300">
-          <Settings2 size={16} />
-        </button>
-      </div>
-
-      {/* --- Scrollable Content --- */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar">
-        <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-[#09090b]/95 backdrop-blur-sm z-10 border-b border-zinc-800/50">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+      {/* --- Search & Header --- */}
+      <div className="p-4 space-y-4 border-b border-zinc-900">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-zinc-100 font-semibold text-xs uppercase tracking-wider">
+            <Layers size={14} className="text-zinc-500" />
             Explorer
-          </h2>
-          <span className="text-[10px] bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded-sm font-mono border border-zinc-700/50">
+          </div>
+          <span className="text-[10px] bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded text-zinc-500 font-mono">
             {tables.length}
           </span>
         </div>
 
-        <ul className="p-2 space-y-1">
-          {tables.map(table => {
+        {/* Search Bar */}
+        <div className="relative group">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-zinc-400 transition-colors" />
+          <input
+            type="text"
+            placeholder="Search tables..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-lg py-2 pl-8 pr-3 text-xs text-zinc-300 focus:outline-none focus:border-zinc-700/50 focus:bg-zinc-900 transition-all placeholder:text-zinc-700"
+          />
+        </div>
+      </div>
+
+      {/* --- Scrollable List --- */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar p-2">
+        <ul className="space-y-0.5">
+          {filteredTables.map(table => {
             const isSelected = selectedTableId === table.id;
             return (
-              <li key={table.id} className="flex flex-col">
+              <li key={table.id}>
                 <div
                   onClick={() => setSelectedTableId(isSelected ? null : table.id)}
                   className={cn(
-                    "group flex items-center gap-3 px-3 py-2 rounded-md text-xs transition-all duration-200 cursor-pointer border select-none",
+                    "group flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all duration-200 cursor-pointer select-none",
                     isSelected
-                      ? "bg-zinc-900 border-zinc-800 text-zinc-100 shadow-sm"
-                      : "bg-transparent border-transparent hover:bg-zinc-900/50 hover:text-zinc-200 text-zinc-500"
+                      ? "bg-blue-500/10 text-blue-400"
+                      : "hover:bg-zinc-900 text-zinc-500 hover:text-zinc-300"
                   )}
                 >
-                  <span className={cn(
-                    "transition-transform duration-200",
-                    isSelected ? "rotate-90 text-zinc-100" : "text-zinc-600 group-hover:text-zinc-500"
-                  )}>
-                    <ChevronRight size={12} strokeWidth={3} />
-                  </span>
-
                   <TableIcon size={14} className={cn(
-                    isSelected ? "text-zinc-100" : "text-zinc-600 group-hover:text-zinc-400"
+                    "transition-colors",
+                    isSelected ? "text-blue-500" : "text-zinc-600 group-hover:text-zinc-500"
                   )} />
 
-                  <span className="truncate flex-1 font-mono font-medium tracking-tight">
+                  <span className="truncate flex-1 font-medium relative top-[0.5px]">
                     {table.name}
                   </span>
-                </div>
 
-                {isSelected && (
-                  <div className="relative pl-3 pr-1 py-1 animate-in slide-in-from-left-2 duration-200">
-                    <div className="absolute left-[18px] top-0 bottom-0 w-px bg-zinc-800" />
-                    <div className="pl-4">
-                      <SidebarTableEditor tableId={table.id} />
-                    </div>
-                  </div>
-                )}
+                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
+                </div>
               </li>
             );
           })}
         </ul>
 
-        {tables.length === 0 && (
-          <div className="px-4 py-12 text-center opacity-50">
-            <div className="inline-flex p-3 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-600 mb-3">
-              <TableIcon size={20} strokeWidth={1.5} />
-            </div>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-widest">No tables found</p>
+        {filteredTables.length === 0 && (
+          <div className="px-4 py-8 text-center">
+            <p className="text-[10px] text-zinc-600 italic">No tables found</p>
           </div>
         )}
       </div>
 
-      {/* --- Footer --- */}
-      <div className="p-4 border-t border-zinc-800 bg-[#09090b] space-y-3 shrink-0">
+      {/* --- Footer Action --- */}
+      <div className="p-4 border-t border-zinc-800/50 bg-[#09090b]">
         <button
           onClick={handleAddTable}
-          className="flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-md transition-all hover:translate-y-[-1px] active:translate-y-[0px] shadow-lg shadow-zinc-950/50"
+          className="flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-lg transition-all hover:-translate-y-0.5 shadow-lg shadow-zinc-950/20 active:translate-y-0"
         >
           <Plus size={14} strokeWidth={3} />
-          NEW TABLE
+          New Table
         </button>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={handleExportJSON}
-            className="flex items-center justify-center gap-2 py-2 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 text-[10px] font-bold uppercase rounded-md transition-colors"
-          >
-            <FileJson size={14} /> JSON
-          </button>
-          <button
-            onClick={handleExportSQL}
-            className="flex items-center justify-center gap-2 py-2 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 text-[10px] font-bold uppercase rounded-md transition-colors"
-          >
-            <FileCode size={14} /> SQL
-          </button>
-        </div>
-
-        <button
-          onClick={handleImportClick}
-          className="flex items-center justify-center gap-2 w-full py-2 border border-dashed border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/30 rounded-md text-[10px] font-bold uppercase text-zinc-600 hover:text-zinc-300 transition-all"
-        >
-          <Upload size={12} /> Import Schema
-        </button>
-
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-          accept=".json"
-        />
       </div>
 
-      {/* --- Resize Handle --- */}
+      {/* --- Resize Handle (Invisible but active) --- */}
       <div
         onMouseDown={startResizing}
         className={cn(
           "absolute top-0 right-0 w-1 h-full cursor-col-resize hover:w-1.5 transition-all duration-200 z-50",
-          isResizing ? "bg-blue-600" : "bg-transparent hover:bg-blue-600/50"
+          isResizing ? "bg-blue-500" : "bg-transparent hover:bg-blue-500/30"
         )}
-      >
-        <div className={cn(
-          "absolute top-1/2 -translate-y-1/2 -right-1.5 w-4 h-8 flex items-center justify-center rounded-sm transition-opacity duration-200 pointer-events-none",
-          "bg-zinc-800 border border-zinc-700 text-zinc-400 shadow-md",
-          isResizing || "group-hover/sidebar:opacity-100 opacity-0" // Show on hover or resize
-        )}>
-          <GripVertical size={10} />
-        </div>
-      </div>
+      />
     </aside>
   );
 }

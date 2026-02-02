@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { 
-  ReactFlow, 
-  Background, 
-  Controls, 
-  Node, 
-  Edge, 
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  Node,
+  Edge,
   OnNodesChange,
   NodeTypes,
   Connection,
@@ -30,53 +30,47 @@ const nodeTypes: NodeTypes = {
 const defaultEdgeOptions = {
   type: 'smoothstep',
   animated: false,
-  style: { 
-    strokeWidth: 0.8, // Very thin line like reference image
-    stroke: '#a1a1aa',
+  style: {
+    strokeWidth: 1.5,
+    stroke: '#52525b', // zinc-600
   },
   labelStyle: {
-    fill: '#3b82f6', // Blue highlight color for visibility
-    fontWeight: 700,
-    fontSize: 11,
-    fontFamily: 'ui-monospace, monospace',
-    cursor: 'pointer',
+    fill: '#e4e4e7', // zinc-200
+    fontWeight: 600,
+    fontSize: 10,
+    fontFamily: 'monospace',
   },
   labelBgStyle: {
-    fill: 'transparent', // No background box
-    fillOpacity: 0,
+    fill: '#18181b', // zinc-950
+    fillOpacity: 1,
   },
-  labelBgPadding: [4, 6] as [number, number],
-  labelBgBorderRadius: 0,
+  labelBgPadding: [4, 2] as [number, number],
+  labelBgBorderRadius: 4,
 };
 
 // Connection line style (while dragging)
 const connectionLineStyle = {
-  stroke: '#a1a1aa',
-  strokeWidth: 1.5,
+  stroke: '#3b82f6',
+  strokeWidth: 2,
   strokeDasharray: '4,4',
 };
 
 // Helper to get marker type based on relation
-// Uses ER diagram crow's foot notation: Arrow = "one", Crow's foot = "many", Circle = "one" in 1:N
 function getMarkerForRelationType(relationType: string, end: 'start' | 'end') {
   if (relationType === '1-1') {
-    // 1:1 - Standard arrows on both ends (both are "one")
     return 'url(#arrow-one)';
   } else if (relationType === '1-N') {
-    // 1:N - Circle on "1" side (start), Crow's foot on "N" side (end)
     if (end === 'start') {
       return 'url(#circle-one)';
     } else {
       return 'url(#crowsfoot)';
     }
   } else if (relationType === 'N-N') {
-    // N:N - Crow's feet on both ends (both are "many")
     return 'url(#crowsfoot)';
   }
   return 'url(#arrow-one)';
 }
 
-// Cycle through relation types
 function getNextRelationType(current: string): string {
   const types = ['1-1', '1-N', 'N-N'];
   const currentIndex = types.indexOf(current);
@@ -98,7 +92,7 @@ export default function SchemaCanvas() {
   const initialNodes: Node[] = useMemo(() => tables.map((table) => ({
     id: table.id,
     position: table.position,
-    data: { table }, 
+    data: { table },
     type: 'table',
     draggable: true,
   })), []);
@@ -116,13 +110,10 @@ export default function SchemaCanvas() {
     })));
   }, [tables, setNodes]);
 
-  // Custom handler to persist position only when drag ends
   const handleNodesChange: OnNodesChange = useCallback(
     (changes) => {
-      // Apply changes to local state for visual feedback
       onNodesChange(changes);
-      
-      // Persist to store only when drag completes
+
       changes.forEach((change) => {
         if (change.type === 'position' && change.position && change.dragging === false) {
           updateTablePosition(change.id, change.position);
@@ -132,24 +123,24 @@ export default function SchemaCanvas() {
     [onNodesChange, updateTablePosition]
   );
 
-  // Map store relations to ReactFlow edges with custom markers
   const edges: Edge[] = useMemo(() => relations.map((rel) => ({
     id: rel.id,
     source: rel.sourceTableId,
     target: rel.targetTableId,
     sourceHandle: `${rel.sourceColumnId}-source`,
     targetHandle: `${rel.targetColumnId}-target`,
-    label: rel.type, // Always show relation type
+    label: rel.type,
     type: 'smoothstep',
     markerStart: getMarkerForRelationType(rel.type, 'start'),
     markerEnd: getMarkerForRelationType(rel.type, 'end'),
-    style: { 
-      stroke: selectedEdgeId === rel.id ? '#3b82f6' : '#a1a1aa', 
-      strokeWidth: selectedEdgeId === rel.id ? 1.5 : 0.8 
+    style: {
+      stroke: selectedEdgeId === rel.id ? '#3b82f6' : '#52525b',
+      strokeWidth: selectedEdgeId === rel.id ? 2 : 1.5
     },
     animated: false,
+    zIndex: selectedEdgeId === rel.id ? 10 : 0,
   })), [relations, selectedEdgeId]);
-  
+
   const onConnect = useCallback((params: Connection) => {
     if (!params.source || !params.target || !params.sourceHandle || !params.targetHandle) return;
 
@@ -162,11 +153,10 @@ export default function SchemaCanvas() {
       sourceColumnId,
       targetTableId: params.target,
       targetColumnId,
-      type: '1-N', // Default to 1-N for now
+      type: '1-N',
     });
   }, [addRelation]);
 
-  // Click on edge label to cycle through relation types
   const onEdgeClick = useCallback((_: any, edge: Edge) => {
     setSelectedEdgeId(edge.id);
     const currentType = edge.label as string;
@@ -174,7 +164,6 @@ export default function SchemaCanvas() {
     updateRelation(edge.id, nextType as any);
   }, [updateRelation]);
 
-  // Handle keyboard events for deletion
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (selectedEdgeId && (event.key === 'Delete' || event.key === 'Backspace')) {
@@ -207,7 +196,11 @@ export default function SchemaCanvas() {
   if (!mounted) return null;
 
   return (
-    <div className="h-full w-full bg-zinc-50 dark:bg-zinc-950 relative">
+    <div className="h-full w-full bg-zinc-950 relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.03),transparent_40%)] pointer-events-none" />
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -217,56 +210,49 @@ export default function SchemaCanvas() {
         nodeTypes={nodeTypes}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
-        
-        // UX Configurations - Optimized for smooth dragging
-        snapToGrid={false} // REMOVED: This was causing sticky movement
+
+        snapToGrid={false}
         fitView
         fitViewOptions={{ padding: 0.2, minZoom: 0.1, maxZoom: 1.5 }}
         minZoom={0.1}
         maxZoom={2}
-        
-        // Connection Configuration
+
         nodesDraggable={true}
         nodesConnectable={true}
         elementsSelectable={true}
-        connectOnClick={false} // Require drag to connect
-        
-        // Visual Improvements
+        connectOnClick={false}
+
         defaultEdgeOptions={defaultEdgeOptions}
         connectionLineType={ConnectionLineType.SmoothStep}
         connectionLineStyle={connectionLineStyle}
-        connectionMode={ConnectionMode.Loose} // Allow connections from any handle
-        colorMode="system"
-        
-        // Performance: Prevent re-renders during drag
+        connectionMode={ConnectionMode.Loose}
+        colorMode="dark"
+
         autoPanOnNodeDrag={true}
-        panOnDrag={[1, 2]} // Middle and right mouse button for panning
+        panOnDrag={[1, 2]}
         selectionOnDrag={false}
+        proOptions={{ hideAttribution: true }}
       >
-        {/* Custom SVG Markers for Crow's Foot Notation */}
+        {/* Custom SVG Markers */}
         <svg style={{ position: 'absolute', width: 0, height: 0 }}>
           <defs>
-            {/* Crow's Foot Marker for "Many" (N) side - Three prongs */}
             <marker
               id="crowsfoot"
               viewBox="0 0 20 20"
               refX="20"
               refY="10"
-              markerWidth="20"
-              markerHeight="20"
+              markerWidth="16"
+              markerHeight="16"
               orient="auto"
             >
-              {/* Three lines spreading out like a trident */}
               <path
                 d="M 0,10 L 12,10 M 12,10 L 20,4 M 12,10 L 20,10 M 12,10 L 20,16"
-                stroke="#a1a1aa"
-                strokeWidth="1.2"
+                stroke="#52525b"
+                strokeWidth="1.5"
                 fill="none"
                 strokeLinecap="round"
               />
             </marker>
-            
-            {/* Circle Marker for "One" (1) side in 1:N relations */}
             <marker
               id="circle-one"
               viewBox="0 0 10 10"
@@ -280,13 +266,11 @@ export default function SchemaCanvas() {
                 cx="5"
                 cy="5"
                 r="3"
-                stroke="#a1a1aa"
-                strokeWidth="1.2"
-                fill="white"
+                stroke="#52525b"
+                strokeWidth="1.5"
+                fill="#18181b"
               />
             </marker>
-            
-            {/* Single Arrow for "One" (1) side in 1:1 relations */}
             <marker
               id="arrow-one"
               viewBox="0 0 10 10"
@@ -298,40 +282,35 @@ export default function SchemaCanvas() {
             >
               <path
                 d="M 0,0 L 10,5 L 0,10 z"
-                fill="#a1a1aa"
+                fill="#52525b"
               />
             </marker>
           </defs>
         </svg>
 
-        <Background 
-          gap={24} 
-          size={2}
-          color="currentColor"
+        <Background
+          gap={20}
+          size={1}
+          color="#3f3f46"
           variant={BackgroundVariant.Dots}
-          className="text-zinc-300 dark:text-zinc-800 opacity-50" 
+          className="opacity-20"
         />
-        
-        {/* Floating Controls Dock (Glassmorphism) */}
-        <Panel position="bottom-center" className="mb-8">
-          <div className="flex items-center gap-1 p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-2xl shadow-zinc-200/50 dark:shadow-black/50">
-            <Controls 
-              showInteractive={false} // Cleaner, icon-only look
-              className="!static !shadow-none !border-none !bg-transparent !m-0 [&>button]:!border-none [&>button]:!bg-transparent [&>button]:!rounded-lg hover:[&>button]:!bg-zinc-200/50 dark:hover:[&>button]:!bg-zinc-700/50 [&>button>svg]:!fill-zinc-600 dark:[&>button>svg]:!fill-zinc-400 !flex-row !gap-1" 
+
+        <Panel position="bottom-center" className="mb-8 hidden sm:block">
+          <div className="flex items-center gap-1 p-2 rounded-2xl border border-white/5 bg-zinc-900/80 backdrop-blur-xl shadow-2xl">
+            <Controls
+              showInteractive={false}
+              className="!static !shadow-none !border-none !bg-transparent !m-0 [&>button]:!border-none [&>button]:!bg-transparent [&>button]:!rounded-lg hover:[&>button]:!bg-white/10 [&>button>svg]:!fill-zinc-400 !flex-row !gap-1"
             />
           </div>
         </Panel>
 
-        {/* Floating MiniMap (Glassmorphism) */}
-        <Panel position="bottom-right" className="mb-8 mr-8">
-          <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-2xl shadow-zinc-200/50 dark:shadow-black/50 p-1">
-            <MiniMap 
+        <Panel position="bottom-right" className="mb-8 mr-8 hidden sm:block">
+          <div className="overflow-hidden rounded-xl border border-white/5 bg-zinc-900/80 backdrop-blur-xl shadow-2xl p-1">
+            <MiniMap
               className="!static !m-0 !bg-transparent"
-              nodeColor={(n) => {
-                // Return a color based on your node data if needed, or a sleek default
-                return '#6366f1'; 
-              }}
-              maskColor="rgba(24, 24, 27, 0.1)" // Matches zinc tones
+              nodeColor="#3b82f6"
+              maskColor="rgba(0, 0, 0, 0.4)"
               zoomable
               pannable
             />
