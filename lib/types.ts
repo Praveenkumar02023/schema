@@ -1,4 +1,4 @@
-export type ColumnType = 'INT' | 'VARCHAR' | 'BOOLEAN' | 'DATE' | 'JSON' | 'TEXT';
+export type ColumnType = 'INT' | 'VARCHAR' | 'BOOLEAN' | 'DATE' | 'JSON' | 'TEXT' | 'UUID' | 'TIMESTAMP';
 
 export interface Column {
   id: string;
