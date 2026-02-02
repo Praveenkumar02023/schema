@@ -315,7 +315,7 @@ export default function SchemaCanvas() {
         colorMode="dark"
 
         autoPanOnNodeDrag={true}
-        panOnDrag={[1, 2]}
+        panOnDrag={true}
         selectionOnDrag={false}
         proOptions={{ hideAttribution: true }}
       >
