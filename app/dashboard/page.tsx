@@ -11,9 +11,11 @@ import {
     Layout,
     Settings,
     LogOut,
-    User
+    User,
+    ChevronDown // Added ChevronDown
 } from 'lucide-react';
 import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react'; // Added next-auth hooks
 
 const DUMMY_PROJECTS = [
     { id: '1', name: 'E-commerce Schema', tables: 12, editedAt: '2 mins ago', color: 'blue' },
@@ -22,7 +24,9 @@ const DUMMY_PROJECTS = [
 ];
 
 export default function DashboardPage() {
+    const { data: session } = useSession();
     const [searchQuery, setSearchQuery] = useState('');
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const filteredProjects = DUMMY_PROJECTS.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -48,13 +52,52 @@ export default function DashboardPage() {
                     </Link>
 
                     {/* User Profile */}
-                    <div className="flex items-center gap-4">
-                        <button className="flex items-center gap-2 px-3 py-1.5 hover:bg-zinc-900 rounded-full transition-colors border border-transparent hover:border-zinc-800">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-zinc-950">
-                                PK
+                    <div className="flex items-center gap-4 relative">
+                        <button
+                            onClick={() => setIsProfileOpen(!isProfileOpen)}
+                            className="flex items-center gap-2 px-2 py-1.5 hover:bg-zinc-900 rounded-full transition-colors border border-transparent hover:border-zinc-800"
+                        >
+                            {session?.user?.image ? (
+                                <img src={session.user.image} alt="Profile" className="w-8 h-8 rounded-full border border-zinc-800 object-cover" />
+                            ) : (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white ring-2 ring-zinc-950">
+                                    {session?.user?.name?.[0] || 'U'}
+                                </div>
+                            )}
+                            <div className="hidden md:flex flex-col items-start text-left">
+                                <span className="text-sm font-medium text-zinc-300 leading-none">{session?.user?.name || 'User'}</span>
                             </div>
-                            <span className="text-sm font-medium text-zinc-300">Praveen</span>
+                            <ChevronDown size={14} className="text-zinc-500" />
                         </button>
+
+                        {isProfileOpen && (
+                            <>
+                                <div className="fixed inset-0 z-10" onClick={() => setIsProfileOpen(false)} />
+                                <div className="absolute top-full right-0 mt-2 w-64 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl z-20 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 ring-1 ring-white/10">
+                                    <div className="p-4 border-b border-zinc-800 bg-zinc-900/50">
+                                        <p className="text-sm font-bold text-white">{session?.user?.name}</p>
+                                        <p className="text-xs text-zinc-500 truncate">{session?.user?.email}</p>
+                                    </div>
+                                    <div className="p-1">
+                                        <button className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors">
+                                            <User size={14} /> Profile
+                                        </button>
+                                        <button className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors">
+                                            <Settings size={14} /> Settings
+                                        </button>
+                                    </div>
+                                    <div className="h-px bg-zinc-800 mx-1" />
+                                    <div className="p-1">
+                                        <button
+                                            onClick={() => signOut({ callbackUrl: '/' })}
+                                            className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-medium text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                        >
+                                            <LogOut size={14} /> Sign out
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </nav>

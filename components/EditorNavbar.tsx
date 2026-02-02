@@ -2,6 +2,7 @@
 
 import { useSchemaStore } from '@/store/useSchemaStore';
 import { exportToJSON, generateSQL, exportToPNG } from '@/lib/exporter';
+import { useSession, signOut } from 'next-auth/react';
 import {
     Download,
     Upload,
@@ -20,6 +21,7 @@ import { useRef, useState } from 'react';
 
 export default function EditorNavbar() {
     const { tables, relations, setSchema } = useSchemaStore();
+    const { data: session } = useSession();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isExportOpen, setIsExportOpen] = useState(false);
@@ -154,7 +156,6 @@ export default function EditorNavbar() {
             <div className="flex items-center gap-3">
 
 
-
                 {/* Share */}
                 <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors">
                     <Share2 size={16} />
@@ -169,9 +170,13 @@ export default function EditorNavbar() {
                         onClick={() => setIsProfileOpen(!isProfileOpen)}
                         className="flex items-center gap-2 hover:bg-zinc-800 pl-1 pr-2 py-1 rounded-full border border-transparent hover:border-zinc-700 transition-all"
                     >
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white shadow-inner">
-                            PK
-                        </div>
+                        {session?.user?.image ? (
+                            <img src={session.user.image} alt="Profile" className="w-6 h-6 rounded-full border border-zinc-700 object-cover" />
+                        ) : (
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white shadow-inner">
+                                {session?.user?.name?.[0] || 'U'}
+                            </div>
+                        )}
                         <ChevronDown size={12} className="text-zinc-500" />
                     </button>
 
@@ -181,8 +186,8 @@ export default function EditorNavbar() {
                             <div className="absolute top-full right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-20 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
                                 {/* User Info */}
                                 <div className="px-4 py-3 border-b border-zinc-800">
-                                    <p className="text-sm font-bold text-white">Praveen Kumar</p>
-                                    <p className="text-xs text-zinc-500 truncate">praveen@example.com</p>
+                                    <p className="text-sm font-bold text-white">{session?.user?.name || 'Guest User'}</p>
+                                    <p className="text-xs text-zinc-500 truncate">{session?.user?.email || 'not signed in'}</p>
                                 </div>
 
                                 {/* Menu */}
@@ -198,9 +203,12 @@ export default function EditorNavbar() {
                                 <div className="h-px bg-zinc-800 mx-1" />
 
                                 <div className="p-1">
-                                    <Link href="/signin" className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                                    <button
+                                        onClick={() => signOut({ callbackUrl: '/' })}
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                    >
                                         <LogOut size={14} /> Sign out
-                                    </Link>
+                                    </button>
                                 </div>
                             </div>
                         </>
