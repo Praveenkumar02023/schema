@@ -11,7 +11,7 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      await signIn('google', { callbackUrl: '/editor' });
+      await signIn('google', { callbackUrl: '/dashboard' });
     } catch (error) {
       console.error('Sign in error:', error);
       setIsLoading(false);
@@ -20,7 +20,7 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30 flex flex-col relative overflow-hidden">
-      
+
       {/* Modern Grid Background (Matches Landing Page) */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-80 pointer-events-none" />
 
@@ -30,8 +30,8 @@ export default function SignInPage() {
 
       {/* Header / Nav */}
       <div className="relative z-20 w-full p-6 flex justify-between items-center max-w-7xl mx-auto">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-medium group"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
@@ -42,12 +42,12 @@ export default function SignInPage() {
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-6 relative z-10">
         <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700">
-          
+
           {/* Logo Section */}
           <div className="text-center mb-10">
             <Link href="/" className="inline-flex items-center gap-3 mb-6 group">
               <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300">
-                 <Database size={24} className="text-emerald-500" />
+                <Database size={24} className="text-emerald-500" />
               </div>
               <span className="text-2xl font-bold tracking-tight text-zinc-100">DrawDB</span>
             </Link>
@@ -57,7 +57,7 @@ export default function SignInPage() {
 
           {/* Card */}
           <div className="bg-zinc-900/30 backdrop-blur-md border border-zinc-800/50 rounded-2xl p-8 shadow-2xl ring-1 ring-white/5 relative overflow-hidden group">
-            
+
             {/* Hover Glow Effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
@@ -141,15 +141,15 @@ export default function SignInPage() {
               </p>
             </div>
           </div>
-          
+
           <div className="mt-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-xs font-medium text-emerald-400">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                v1.0 is live
-              </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-xs font-medium text-emerald-400">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              v1.0 is live
+            </div>
           </div>
 
         </div>
