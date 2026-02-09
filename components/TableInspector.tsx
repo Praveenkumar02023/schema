@@ -6,12 +6,14 @@ import {
   Plus,
   Trash2,
   Key,
-  Database,
   Type,
   ChevronDown,
-  Settings,
   MoreHorizontal,
-  Search
+  Search,
+  User,
+  Package,
+  ShoppingCart,
+  MessageSquare
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -67,9 +69,22 @@ export default function TableInspector() {
 
         <div className="flex items-center justify-between mb-4 relative z-10">
           <div className="flex items-center gap-2 text-zinc-400">
-            <div className="p-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
-              <Database size={14} className="text-blue-400" />
-            </div>
+            {(() => {
+              const name = selectedTable.name.toLowerCase();
+              let IconComponent = null;
+              if (name.includes('user') || name.includes('student') || name.includes('person')) IconComponent = User;
+              else if (name.includes('product') || name.includes('item')) IconComponent = Package;
+              else if (name.includes('order') || name.includes('cart')) IconComponent = ShoppingCart;
+              else if (name.includes('message') || name.includes('chat')) IconComponent = MessageSquare;
+
+              if (!IconComponent) return null;
+
+              return (
+                <div className="p-1.5 rounded-lg bg-zinc-800/50 border border-white/5">
+                  <IconComponent size={14} className="text-blue-400" />
+                </div>
+              );
+            })()}
             <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">
               Table Inspector
             </span>

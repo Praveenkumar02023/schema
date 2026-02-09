@@ -1,7 +1,7 @@
 "use client";
 import { useSchemaStore } from '@/store/useSchemaStore';
 import { Column, ColumnType } from '@/lib/types';
-import { Plus, Trash2, Database, Key, Type as TypeIcon, MoreHorizontal, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Key, Type as TypeIcon, MoreHorizontal, AlertCircle, User, Package, ShoppingCart, MessageSquare } from 'lucide-react';
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -37,15 +37,22 @@ export default function SidebarTableEditor({ tableId }: { tableId: string }) {
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-zinc-950 animate-in slide-in-from-right-4 duration-300">
-      
+
       {/* --- Header & Table Identity --- */}
       <div className="p-4 bg-zinc-50/30 dark:bg-zinc-900/10">
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-zinc-400 dark:text-zinc-500">
-            <Database size={14} />
+            {(() => {
+              const name = selectedTable.name.toLowerCase();
+              if (name.includes('user') || name.includes('student') || name.includes('person')) return <User size={14} />;
+              if (name.includes('product') || name.includes('item')) return <Package size={14} />;
+              if (name.includes('order') || name.includes('cart')) return <ShoppingCart size={14} />;
+              if (name.includes('message') || name.includes('chat')) return <MessageSquare size={14} />;
+              return null;
+            })()}
             <span className="text-xs font-bold uppercase tracking-widest">Table Properties</span>
           </div>
-          
+
           <div className="relative group">
             <input
               type="text"
@@ -67,7 +74,7 @@ export default function SidebarTableEditor({ tableId }: { tableId: string }) {
               {selectedTable.columns.length}
             </span>
           </h3>
-          <button 
+          <button
             onClick={handleAddColumn}
             className="flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-semibold rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
           >
@@ -77,8 +84,8 @@ export default function SidebarTableEditor({ tableId }: { tableId: string }) {
 
         <div className="space-y-2">
           {selectedTable.columns.map((col) => (
-            <div 
-              key={col.id} 
+            <div
+              key={col.id}
               className="group relative flex flex-col gap-2 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900/30 hover:bg-zinc-100 dark:hover:bg-zinc-900/50 transition-all"
             >
               {/* Row 1: Name & Actions */}
@@ -86,8 +93,8 @@ export default function SidebarTableEditor({ tableId }: { tableId: string }) {
                 {/* Icon Indicator */}
                 <div className={cn(
                   "p-1.5 rounded-md transition-colors",
-                  col.isPrimaryKey 
-                    ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500" 
+                  col.isPrimaryKey
+                    ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500"
                     : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
                 )}>
                   {col.isPrimaryKey ? <Key size={12} /> : <TypeIcon size={12} />}
@@ -103,7 +110,7 @@ export default function SidebarTableEditor({ tableId }: { tableId: string }) {
                 />
 
                 {/* Delete Button (Visible on Hover) */}
-                <button 
+                <button
                   onClick={() => deleteColumn(selectedTable.id, col.id)}
                   className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all"
                 >
@@ -131,8 +138,8 @@ export default function SidebarTableEditor({ tableId }: { tableId: string }) {
                     onClick={() => updateColumn(selectedTable.id, col.id, { isPrimaryKey: !col.isPrimaryKey })}
                     className={cn(
                       "px-2 py-1 rounded text-[9px] font-bold transition-all",
-                      col.isPrimaryKey 
-                        ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500" 
+                      col.isPrimaryKey
+                        ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500"
                         : "bg-transparent text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                     )}
                   >
@@ -142,8 +149,8 @@ export default function SidebarTableEditor({ tableId }: { tableId: string }) {
                     onClick={() => updateColumn(selectedTable.id, col.id, { isNullable: !col.isNullable })}
                     className={cn(
                       "px-2 py-1 rounded text-[9px] font-bold transition-all",
-                      col.isNullable 
-                        ? "bg-transparent text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800" 
+                      col.isNullable
+                        ? "bg-transparent text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                         : "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
                     )}
                   >

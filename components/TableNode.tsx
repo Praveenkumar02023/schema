@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Table } from '@/lib/types';
-import { Key, MoreVertical, Database, Columns } from 'lucide-react';
+import { Key, MoreVertical, Columns, User, Package, ShoppingCart, MessageSquare } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -40,14 +40,28 @@ export default memo(function TableNode({ data, selected }: NodeProps) {
           : "from-white/[0.03] to-transparent border-white/[0.05]"
       )}>
         <div className="flex items-center gap-3">
-          <div className={cn(
-            "flex items-center justify-center w-8 h-8 rounded-lg shadow-inner border transition-colors",
-            selected
-              ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
-              : "bg-zinc-800 text-zinc-500 border-white/5"
-          )}>
-            <Database size={14} strokeWidth={2.5} />
-          </div>
+          {(() => {
+            const name = table.name.toLowerCase();
+            let IconComponent = null;
+
+            if (name.includes('user') || name.includes('student') || name.includes('person') || name.includes('people') || name.includes('auth')) IconComponent = <User size={14} strokeWidth={2.5} />;
+            else if (name.includes('product') || name.includes('item') || name.includes('inventory')) IconComponent = <Package size={14} strokeWidth={2.5} />;
+            else if (name.includes('order') || name.includes('cart') || name.includes('checkout')) IconComponent = <ShoppingCart size={14} strokeWidth={2.5} />;
+            else if (name.includes('message') || name.includes('chat') || name.includes('comment') || name.includes('post')) IconComponent = <MessageSquare size={14} strokeWidth={2.5} />;
+
+            if (!IconComponent) return null;
+
+            return (
+              <div className={cn(
+                "flex items-center justify-center w-8 h-8 rounded-lg shadow-inner border transition-colors",
+                selected
+                  ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                  : "bg-zinc-800 text-zinc-500 border-white/5"
+              )}>
+                {IconComponent}
+              </div>
+            );
+          })()}
 
           <div className="flex flex-col gap-0.5">
             <span className={cn(

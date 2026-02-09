@@ -17,46 +17,28 @@ interface SchemaStore {
   deleteRelation: (relationId: string) => void;
   setSelectedTableId: (id: string | null) => void;
   setSchema: (schema: Partial<SchemaStore>) => void;
+
+  // Project Association
+  currentProjectId: string | null;
+  currentProjectName: string;
+  setCurrentProject: (id: string, name: string) => void;
+  loadProjectSchema: (schema: { tables: Table[], relations: Relation[] }) => void;
 }
 
 export const useSchemaStore = create<SchemaStore>((set) => ({
-  tables: [
-    {
-      id: 'users',
-      name: 'users',
-      position: { x: 100, y: 100 },
-      columns: [
-        { id: 'c1', name: 'id', type: 'INT', isPrimaryKey: true, isNullable: false },
-        { id: 'c2', name: 'email', type: 'VARCHAR', isPrimaryKey: false, isNullable: false },
-      ],
-    },
-    {
-      id: 'posts',
-      name: 'posts',
-      position: { x: 500, y: 150 },
-      columns: [
-        { id: 'c3', name: 'id', type: 'INT', isPrimaryKey: true, isNullable: false },
-        { id: 'c4', name: 'title', type: 'VARCHAR', isPrimaryKey: false, isNullable: false },
-        { id: 'c5', name: 'user_id', type: 'INT', isPrimaryKey: false, isNullable: true },
-        // Foreign key relation logic is separate, but we model it via relations
-      ],
-    },
-  ],
-  relations: [
-     // Example relation
-     { 
-       id: 'r1', 
-       sourceTableId: 'users', 
-       sourceColumnId: 'c1', 
-       targetTableId: 'posts', 
-       targetColumnId: 'c5', 
-       type: '1-N' 
-     }
-  ],
+
+  tables: [],
+  relations: [],
   selectedTableId: null,
+  currentProjectId: null,
+  currentProjectName: "Untitled Project",
+
+  setCurrentProject: (id: string, name: string) => set({ currentProjectId: id, currentProjectName: name }),
+
+  loadProjectSchema: (schema: { tables: Table[], relations: Relation[] }) => set({ tables: schema.tables, relations: schema.relations }),
 
   addTable: (table) => set((state) => ({ tables: [...state.tables, table] })),
-  
+
   updateTablePosition: (id, position) =>
     set((state) => ({
       tables: state.tables.map((t) =>
@@ -92,11 +74,11 @@ export const useSchemaStore = create<SchemaStore>((set) => ({
       tables: state.tables.map((t) =>
         t.id === tableId
           ? {
-              ...t,
-              columns: t.columns.map((c) =>
-                c.id === columnId ? { ...c, ...updates } : c
-              ),
-            }
+            ...t,
+            columns: t.columns.map((c) =>
+              c.id === columnId ? { ...c, ...updates } : c
+            ),
+          }
           : t
       ),
     })),
@@ -131,7 +113,7 @@ export const useSchemaStore = create<SchemaStore>((set) => ({
   setSelectedTableId: (id) => set({ selectedTableId: id }),
 
   setSchema: (schema: Partial<SchemaStore>) => set((state) => ({
-      tables: schema.tables || [],
-      relations: schema.relations || [],
-     })),
+    tables: schema.tables || [],
+    relations: schema.relations || [],
+  })),
 }));

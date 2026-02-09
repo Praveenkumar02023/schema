@@ -20,7 +20,7 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 
 export default function EditorNavbar() {
-    const { tables, relations, setSchema } = useSchemaStore();
+    const { tables, relations, setSchema, currentProjectName } = useSchemaStore();
     const { data: session } = useSession();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -48,12 +48,13 @@ export default function EditorNavbar() {
     };
 
     const handleExportJSON = () => {
+        // ... code
         const json = exportToJSON({ tables, relations });
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'drawdb_dump.json';
+        a.download = `${currentProjectName.replace(/\s+/g, '_').toLowerCase()}.json`;
         a.click();
         setIsExportOpen(false);
     };
@@ -64,7 +65,7 @@ export default function EditorNavbar() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'drawdb.sql';
+        a.download = `${currentProjectName.replace(/\s+/g, '_').toLowerCase()}.sql`;
         a.click();
         setIsExportOpen(false);
     };
@@ -74,7 +75,7 @@ export default function EditorNavbar() {
 
             {/* Left: Brand & File Title */}
             <div className="flex items-center gap-4">
-                <Link href="/" className="flex items-center gap-2 group">
+                <Link href="/dashboard" className="flex items-center gap-2 group">
                     {/* New Logo: Abstract Stacked Layers */}
                     <div className="w-8 h-8 relative flex items-center justify-center">
                         <div className="absolute inset-0 bg-blue-500/20 rounded-lg blur-sm group-hover:bg-blue-500/30 transition-colors" />
@@ -95,9 +96,8 @@ export default function EditorNavbar() {
                 {/* File Info */}
                 <div className="flex items-center gap-2">
                     <div className="text-sm font-medium text-zinc-300 hover:text-white cursor-pointer px-2 py-1 rounded hover:bg-zinc-800 transition-colors">
-                        Untitled Project
+                        {currentProjectName || 'Untitled Project'}
                     </div>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 border border-zinc-700">v1.0</span>
                 </div>
             </div>
 
@@ -133,11 +133,6 @@ export default function EditorNavbar() {
                                     <FileJson size={14} className="text-yellow-500" />
                                     <span>Export JSON</span>
                                 </button>
-                                <div className="h-px bg-zinc-800 my-1" />
-                                <button className="flex items-center gap-3 px-3 py-2 text-left text-xs font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-lg transition-colors opacity-50 cursor-not-allowed">
-                                    <ImageIcon size={14} className="text-purple-500" />
-                                    <span>Export PNG (Soon)</span>
-                                </button>
                             </div>
                         </>
                     )}
@@ -155,11 +150,6 @@ export default function EditorNavbar() {
             {/* Right: Actions & Profile */}
             <div className="flex items-center gap-3">
 
-
-                {/* Share */}
-                <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors">
-                    <Share2 size={16} />
-                </button>
 
                 {/* Vertical Separator */}
                 <div className="h-4 w-px bg-zinc-800" />

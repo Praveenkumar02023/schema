@@ -1,6 +1,5 @@
 'use client';
 
-import { Database } from 'lucide-react';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
@@ -38,7 +37,12 @@ export default function SignUpPage() {
           </Link>
 
           <div className="flex items-center justify-center gap-3 mb-4 mt-8">
-            <Database size={32} className="text-blue-400" />
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-blue-400">
+              <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 14L12 19L22 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 8V16" stroke="currentColor" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="12" cy="13" r="1.5" fill="currentColor" />
+            </svg>
             <span className="text-3xl font-bold">DrawDB</span>
           </div>
           <p className="text-zinc-400">Create your account</p>

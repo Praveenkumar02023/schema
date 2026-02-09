@@ -4,11 +4,13 @@ import { useState, useRef, useEffect } from 'react';
 import { useSchemaStore } from '../store/useSchemaStore';
 import {
   Plus,
-  Table as TableIcon,
   Search,
   GripVertical,
   MoreVertical,
-  Layers
+  User,
+  Package,
+  ShoppingCart,
+  MessageSquare
 } from 'lucide-react';
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -88,7 +90,6 @@ export default function ResizableSidebar() {
       <div className="p-4 space-y-4 border-b border-zinc-900">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-100 font-semibold text-xs uppercase tracking-wider">
-            <Layers size={14} className="text-zinc-500" />
             Explorer
           </div>
           <span className="text-[10px] bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded text-zinc-500 font-mono">
@@ -125,10 +126,21 @@ export default function ResizableSidebar() {
                       : "hover:bg-zinc-900 text-zinc-500 hover:text-zinc-300"
                   )}
                 >
-                  <TableIcon size={14} className={cn(
-                    "transition-colors",
-                    isSelected ? "text-blue-500" : "text-zinc-600 group-hover:text-zinc-500"
-                  )} />
+                  {(() => {
+                    const name = table.name.toLowerCase();
+                    let IconComponent = null;
+                    if (name.includes('user') || name.includes('student') || name.includes('person')) IconComponent = User;
+                    else if (name.includes('product') || name.includes('item')) IconComponent = Package;
+                    else if (name.includes('order') || name.includes('cart')) IconComponent = ShoppingCart;
+                    else if (name.includes('message') || name.includes('chat')) IconComponent = MessageSquare;
+
+                    if (!IconComponent) return null;
+
+                    return <IconComponent size={14} className={cn(
+                      "transition-colors",
+                      isSelected ? "text-blue-500" : "text-zinc-600 group-hover:text-zinc-500"
+                    )} />;
+                  })()}
 
                   <span className="truncate flex-1 font-medium relative top-[0.5px]">
                     {table.name}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Database, Zap, Users, Shield, ArrowRight, Star, Check, MessageSquare, Lock, Quote, CheckCircle2, FileText } from 'lucide-react';
+import { Database, Zap, Users, Shield, ArrowRight, Star, Check, MessageSquare, Lock, CheckCircle2, FileText } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
@@ -995,7 +995,12 @@ function Footer() {
           {/* Column 1: Branding */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <Database size={24} className="text-blue-500" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-blue-500">
+                <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 14L12 19L22 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 8V16" stroke="currentColor" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="12" cy="13" r="1.5" fill="currentColor" />
+              </svg>
               <span className="text-xl font-bold text-white">DrawDB</span>
             </div>
             <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">

@@ -2,35 +2,90 @@
 
 import Link from 'next/link';
 import {
-    Database,
     Plus,
     Search,
     MoreVertical,
     Clock,
     ChevronRight,
-    Layout,
     Settings,
     LogOut,
     User,
     ChevronDown // Added ChevronDown
 } from 'lucide-react';
 import { useState } from 'react';
-import { useSession, signOut } from 'next-auth/react'; // Added next-auth hooks
+import { useSession, signOut } from 'next-auth/react';
+import { useProjectStore } from '@/store/useProjectStore';
+import { useSchemaStore } from '@/store/useSchemaStore';
+import { useRouter } from 'next/navigation';
+import { Project } from '@/lib/types';
 
-const DUMMY_PROJECTS = [
-    { id: '1', name: 'E-commerce Schema', tables: 12, editedAt: '2 mins ago', color: 'blue' },
-    { id: '2', name: 'Blog Database', tables: 5, editedAt: '2 days ago', color: 'emerald' },
-    { id: '3', name: 'Analytics Setup', tables: 8, editedAt: '1 week ago', color: 'purple' },
-];
+const COLOR_VARIANTS = {
+    blue: {
+        gradient: "from-blue-500/0 via-blue-500/5",
+        iconTv: "text-blue-400 group-hover:bg-blue-500/10 group-hover:border-blue-500/20",
+        text: "group-hover:text-blue-400"
+    },
+    emerald: {
+        gradient: "from-emerald-500/0 via-emerald-500/5",
+        iconTv: "text-emerald-400 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20",
+        text: "group-hover:text-emerald-400"
+    },
+    purple: {
+        gradient: "from-purple-500/0 via-purple-500/5",
+        iconTv: "text-purple-400 group-hover:bg-purple-500/10 group-hover:border-purple-500/20",
+        text: "group-hover:text-purple-400"
+    }
+};
+
+
+type ProjectColor = keyof typeof COLOR_VARIANTS;
 
 export default function DashboardPage() {
+    const { projects, addProject } = useProjectStore();
+    const { setCurrentProject, loadProjectSchema } = useSchemaStore();
     const { data: session } = useSession();
+    const router = useRouter();
+
     const [searchQuery, setSearchQuery] = useState('');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-    const filteredProjects = DUMMY_PROJECTS.filter(p =>
+    // Create Project Modal State
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [newProjectName, setNewProjectName] = useState('');
+    const [newProjectColor, setNewProjectColor] = useState<ProjectColor>('blue');
+
+    const filteredProjects = projects.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleCreateProject = () => {
+        if (!newProjectName.trim()) return;
+
+        const newProject: Project = {
+            id: crypto.randomUUID(),
+            name: newProjectName,
+            databaseType: 'PostgreSQL', // Default for now
+            createdAt: new Date().toISOString(),
+            lastEdited: 'Just now',
+            color: newProjectColor,
+            tables: [],
+            relations: [],
+        };
+
+        addProject(newProject);
+
+        // Initialize Editor
+        setCurrentProject(newProject.id, newProject.name);
+        loadProjectSchema({ tables: [], relations: [] });
+
+        router.push('/editor');
+    };
+
+    const handleOpenProject = (project: Project) => {
+        setCurrentProject(project.id, project.name);
+        loadProjectSchema({ tables: project.tables, relations: project.relations });
+        router.push('/editor');
+    };
 
     return (
         <div className="min-h-screen bg-zinc-950 text-white selection:bg-blue-500/30 flex flex-col relative overflow-hidden">
@@ -46,7 +101,12 @@ export default function DashboardPage() {
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 group">
                         <div className="w-8 h-8 relative flex items-center justify-center bg-blue-500/10 rounded-lg border border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
-                            <Database size={16} className="text-blue-500" />
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="z-10 text-blue-500">
+                                <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M2 14L12 19L22 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M2 8V16" stroke="currentColor" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="12" cy="13" r="1.5" fill="currentColor" />
+                            </svg>
                         </div>
                         <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-200 transition-colors">DrawDB</span>
                     </Link>
@@ -106,7 +166,7 @@ export default function DashboardPage() {
             <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-white mb-2">Projects</h1>
                         <p className="text-zinc-400 text-sm">Manage and organize your database schemas.</p>
@@ -125,65 +185,142 @@ export default function DashboardPage() {
                             />
                         </div>
 
-                        {/* Filter Button (Visual) */}
-                        <button className="p-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors">
-                            <Layout size={16} />
+                        {/* Create Button */}
+                        <button
+                            onClick={() => setIsCreateOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 whitespace-nowrap"
+                        >
+                            <Plus size={16} />
+                            <span>New Project</span>
                         </button>
                     </div>
                 </div>
 
-                {/* --- Content Grid --- */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {/* --- Content List --- */}
+                <div className="flex flex-col gap-3">
+                    {/* List Header */}
+                    <div className="grid grid-cols-12 gap-4 px-6 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                        <div className="col-span-6">Project Name</div>
+                        <div className="col-span-4 hidden sm:block">Last Edited</div>
+                        <div className="col-span-2 text-right">Actions</div>
+                    </div>
 
-                    {/* New Project Card */}
-                    <Link href="/editor" className="group relative flex flex-col items-center justify-center gap-4 aspect-[4/3] bg-zinc-900/20 border border-dashed border-zinc-800 rounded-2xl hover:bg-zinc-900/40 hover:border-blue-500/50 transition-all cursor-pointer overflow-hidden">
+                    {filteredProjects.map((project, index) => {
+                        const colorTheme = COLOR_VARIANTS[project.color as ProjectColor] || COLOR_VARIANTS.blue;
 
-                        <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        return (
+                            <div
+                                key={project.id}
+                                onClick={() => handleOpenProject(project)}
+                                className="group relative grid grid-cols-12 gap-4 items-center p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-2xl hover:bg-zinc-900 hover:border-zinc-700/80 transition-all duration-300 hover:shadow-xl hover:shadow-black/20 hover:scale-[1.005] cursor-pointer"
+                                style={{ animationDelay: `${index * 50}ms` }}
+                            >
+                                {/* Hover Glow Effect */}
+                                <div className={`absolute inset-0 bg-gradient-to-r ${colorTheme.gradient} to-transparent opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-500 pointer-events-none`} />
 
-                        <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:scale-110 group-hover:border-blue-500/50 transition-all duration-300 z-10 shadow-xl">
-                            <Plus size={32} className="text-zinc-500 group-hover:text-blue-400 transition-colors" />
-                        </div>
-                        <span className="text-sm font-bold text-zinc-500 group-hover:text-blue-400 z-10 transition-colors">Create New Project</span>
-                    </Link>
-
-                    {/* Project List */}
-                    {filteredProjects.map((project) => (
-                        <Link key={project.id} href="/editor" className="group relative flex flex-col aspect-[4/3] bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-
-                            {/* Card Image / Preview (Abstract) */}
-                            <div className="flex-1 bg-zinc-950/50 relative overflow-hidden p-6 flex items-center justify-center">
-                                <div className={`absolute top-0 right-0 w-32 h-32 bg-${project.color}-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
-
-                                {/* Mock Diagram */}
-                                <div className="w-full h-full border border-zinc-800/50 rounded-lg bg-zinc-900/50 relative opacity-50 group-hover:opacity-80 transition-opacity">
-                                    <div className="absolute top-4 left-4 w-12 h-16 border border-zinc-700 bg-zinc-800 rounded-md" />
-                                    <div className="absolute bottom-6 right-8 w-16 h-12 border border-blue-900/30 bg-blue-900/10 rounded-md" />
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-12 bg-zinc-700 rotate-45" />
-                                </div>
-                            </div>
-
-                            {/* Card Body */}
-                            <div className="p-4 border-t border-zinc-800 bg-zinc-900/80 backdrop-blur-sm relative z-10">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <h3 className="text-sm font-bold text-zinc-200 group-hover:text-white transition-colors mb-1">{project.name}</h3>
+                                {/* Project Info */}
+                                <div className="col-span-6 flex items-center gap-4 relative z-10">
+                                    {/* Icon/Thumbnail */}
+                                    <div className={`w-10 h-10 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center transition-all duration-300 ${colorTheme.iconTv}`}>
+                                        <span className="text-sm font-bold">{project.name.charAt(0).toUpperCase()}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <h3 className={`text-sm font-semibold text-zinc-200 transition-colors ${colorTheme.text}`}>{project.name}</h3>
                                         <div className="flex items-center gap-2 text-[10px] text-zinc-500">
-                                            <span className="font-mono">{project.tables} tables</span>
-                                            <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                                            <Clock size={10} />
-                                            <span>{project.editedAt}</span>
+                                            <span className="bg-zinc-800/50 px-1.5 py-0.5 rounded text-zinc-400">{project.tables.length} tables</span>
                                         </div>
                                     </div>
-                                    <button className="p-1 hover:bg-zinc-800 rounded-md text-zinc-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
-                                        <MoreVertical size={14} />
+                                </div>
+
+                                {/* Meta Info */}
+                                <div className="col-span-4 hidden sm:flex items-center gap-2 text-zinc-500 text-xs relative z-10">
+                                    <Clock size={12} />
+                                    <span>{new Date(project.lastEdited).toLocaleDateString()}</span>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="col-span-6 sm:col-span-2 flex items-center justify-end relative z-10">
+                                    <button className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 duration-200">
+                                        <MoreVertical size={16} />
                                     </button>
+                                    <ChevronRight size={16} className="text-zinc-600 group-hover:text-blue-500 transform group-hover:translate-x-1 transition-all duration-300 ml-2" />
                                 </div>
                             </div>
-                        </Link>
-                    ))}
+                        );
+                    })}
 
+                    {/* Empty State */}
+                    {filteredProjects.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/20">
+                            <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+                                <Search size={24} className="text-zinc-600" />
+                            </div>
+                            <h3 className="text-lg font-medium text-white">No projects found</h3>
+                            <p className="text-zinc-500 text-sm mt-1 max-w-xs">
+                                {projects.length === 0 ? "You haven't created any projects yet." : `We couldn't find any projects matching "${searchQuery}".`}
+                            </p>
+                            <button
+                                onClick={projects.length === 0 ? () => setIsCreateOpen(true) : () => setSearchQuery('')}
+                                className="mt-6 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                            >
+                                {projects.length === 0 ? "Create your first project" : "Clear search"}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </main>
+
+            {/* Create Project Modal */}
+            {isCreateOpen && (
+                <>
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity" onClick={() => setIsCreateOpen(false)} />
+                    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl z-50 p-6 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-bold text-white">Create New Project</h2>
+                            <button onClick={() => setIsCreateOpen(false)} className="text-zinc-500 hover:text-white transition-colors">
+                                <Plus size={24} className="rotate-45" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Project Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. E-commerce Schema"
+                                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-zinc-600"
+                                    value={newProjectName}
+                                    onChange={(e) => setNewProjectName(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-400 mb-2 uppercase tracking-wider">Color Theme</label>
+                                <div className="flex gap-3">
+                                    {(['blue', 'emerald', 'purple'] as ProjectColor[]).map((c) => (
+                                        <button
+                                            key={c}
+                                            onClick={() => setNewProjectColor(c)}
+                                            className={`h-10 flex-1 rounded-xl border transition-all ${newProjectColor === c ? `bg-${c}-500/20 border-${c}-500` : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'}`}
+                                        >
+                                            <div className={`w-4 h-4 rounded-full mx-auto bg-${c}-500 ${newProjectColor === c ? 'ring-2 ring-white/20' : ''}`} />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleCreateProject}
+                                disabled={!newProjectName.trim()}
+                                className="w-full mt-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30"
+                            >
+                                Create Project
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
 
         </div>
     );

@@ -26,7 +26,19 @@ export interface Relation {
   type: RelationType;
 }
 
+
 export interface SchemaState {
+  tables: Table[];
+  relations: Relation[];
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  databaseType: string; // e.g., 'PostgreSQL', 'MySQL', 'SQLite'
+  createdAt: string;
+  lastEdited: string;
+  color: string; // For the list view decoration
   tables: Table[];
   relations: Relation[];
 }

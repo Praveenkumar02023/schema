@@ -8,7 +8,6 @@ import {
   FileCode,
   FileJson,
   Upload,
-  Database,
   ChevronRight,
   Settings2,
   GripVertical
@@ -85,8 +84,13 @@ export default function ResizableSidebar() {
       {/* --- Header --- */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-800 bg-[#09090b] shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 bg-zinc-100 rounded-md text-zinc-950 shadow-inner">
-            <Database size={16} strokeWidth={2.5} />
+          <div className="flex items-center justify-center w-8 h-8 relative">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="z-10 text-white">
+              <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 14L12 19L22 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 8V16" stroke="currentColor" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="12" cy="13" r="1.5" fill="currentColor" />
+            </svg>
           </div>
           <div className="flex flex-col">
             <h1 className="text-sm font-bold text-zinc-100 tracking-tight leading-none">DrawDB</h1>
