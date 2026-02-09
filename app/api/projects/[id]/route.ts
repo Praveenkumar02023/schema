@@ -82,7 +82,7 @@ export async function PUT(
         }
 
         // Transaction to update everything safely
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx: any) => {
             // 1. Update project metadata
             const updatedProject = await tx.project.update({
                 where: { id },
