@@ -12,7 +12,7 @@ import {
     User,
     ChevronDown // Added ChevronDown
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useSchemaStore } from '@/store/useSchemaStore';
@@ -43,7 +43,7 @@ type ProjectColor = keyof typeof COLOR_VARIANTS;
 export default function DashboardPage() {
     const { projects, addProject } = useProjectStore();
     const { setCurrentProject, loadProjectSchema } = useSchemaStore();
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const router = useRouter();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -54,37 +54,81 @@ export default function DashboardPage() {
     const [newProjectName, setNewProjectName] = useState('');
     const [newProjectColor, setNewProjectColor] = useState<ProjectColor>('blue');
 
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch projects on mount
+    useEffect(() => {
+        const fetchProjects = async () => {
+            if (session?.user) {
+                try {
+                    const response = await fetch('/api/projects');
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Transform the API response to match Project type (specifically dates)
+                        // Actually the API returns strings which is what we store in the frontend state anyway (from JSON)
+                        // but let's make sure the store accepts it.
+                        // The store uses persist middleware, so it expects serializable data. Strings are perfect.
+                        useProjectStore.getState().setProjects(data);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch projects:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        if (status === 'authenticated') {
+            fetchProjects();
+        } else if (status === 'unauthenticated') {
+            setIsLoading(false); // Stop loading if not logged in
+        }
+    }, [status, session?.user]); // Re-run when session status changes
+
     const filteredProjects = projects.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleCreateProject = () => {
+    const handleCreateProject = async () => {
         if (!newProjectName.trim()) return;
 
-        const newProject: Project = {
-            id: crypto.randomUUID(),
-            name: newProjectName,
-            databaseType: 'PostgreSQL', // Default for now
-            createdAt: new Date().toISOString(),
-            lastEdited: 'Just now',
-            color: newProjectColor,
-            tables: [],
-            relations: [],
-        };
+        try {
+            const response = await fetch('/api/projects', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: newProjectName,
+                    color: newProjectColor,
+                    databaseType: 'PostgreSQL', // Default for now
+                }),
+            });
 
-        addProject(newProject);
+            if (!response.ok) {
+                throw new Error('Failed to create project');
+            }
 
-        // Initialize Editor
-        setCurrentProject(newProject.id, newProject.name);
-        loadProjectSchema({ tables: [], relations: [] });
+            const newProject = await response.json();
 
-        router.push('/editor');
+            // Store updates
+            addProject(newProject);
+
+            // Navigate to editor
+            setCurrentProject(newProject.id, newProject.name);
+            loadProjectSchema({ tables: [], relations: [] });
+
+            router.push(`/editor/${newProject.id}`);
+        } catch (error) {
+            console.error('Error creating project:', error);
+            // Ideally show a toast notification here
+        }
     };
 
     const handleOpenProject = (project: Project) => {
         setCurrentProject(project.id, project.name);
         loadProjectSchema({ tables: project.tables, relations: project.relations });
-        router.push('/editor');
+        router.push(`/editor/${project.id}`);
     };
 
     return (

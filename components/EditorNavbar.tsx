@@ -1,5 +1,4 @@
 'use client';
-
 import { useSchemaStore } from '@/store/useSchemaStore';
 import { exportToJSON, generateSQL, exportToPNG } from '@/lib/exporter';
 import { useSession, signOut } from 'next-auth/react';
@@ -14,17 +13,23 @@ import {
     FileJson,
     FileCode,
     Image as ImageIcon,
-    Play
+    Play,
+    Save
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
-export default function EditorNavbar() {
+interface EditorNavbarProps {
+    projectId?: string;
+}
+
+export default function EditorNavbar({ projectId }: EditorNavbarProps) {
     const { tables, relations, setSchema, currentProjectName } = useSchemaStore();
     const { data: session } = useSession();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isExportOpen, setIsExportOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleImportClick = () => fileInputRef.current?.click();
 
@@ -47,8 +52,35 @@ export default function EditorNavbar() {
         reader.readAsText(file);
     };
 
+    const handleSave = async () => {
+        if (!projectId) return;
+        setIsSaving(true);
+        try {
+            const response = await fetch(`/api/projects/${projectId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: currentProjectName,
+                    tables,
+                    relations,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save');
+            }
+            // Optional: show success toast
+        } catch (error) {
+            console.error('Error saving project:', error);
+            alert('Failed to save project');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const handleExportJSON = () => {
-        // ... code
         const json = exportToJSON({ tables, relations });
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -103,6 +135,17 @@ export default function EditorNavbar() {
 
             {/* Middle: Quick Actions */}
             <div className="hidden md:flex items-center gap-1">
+                {/* Save Button */}
+                {projectId && (
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors disabled:opacity-50"
+                    >
+                        <Save size={14} className={isSaving ? "animate-pulse" : ""} />
+                        {isSaving ? "Saving..." : "Save"}
+                    </button>
+                )}
                 <button
                     onClick={handleImportClick}
                     className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors"
