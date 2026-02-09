@@ -30,7 +30,7 @@ export async function GET() {
         });
 
         // Transform dates to strings for the frontend
-        const formattedProjects = projects.map((project) => ({
+        const formattedProjects = projects.map((project: any) => ({
             ...project,
             createdAt: project.createdAt.toISOString(),
             lastEdited: project.lastEdited.toISOString(),
