@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+
+generator client {
+  provider   = "prisma-client"
+  output     = "../lib/generated/prisma"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Users and Authentication (NextAuth.js standard)
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  projects      Project[] // Relation to Projects
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Your Application Models
+
+model Project {
+  id           String   @id @default(cuid())
+  name         String
+  databaseType String   // e.g., 'PostgreSQL', 'MySQL'
+  createdAt    DateTime @default(now())
+  lastEdited   DateTime @updatedAt
+  color        String?  // For UI decoration
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  tables       Table[]
+  relations    Relation[]
+}
+
+model Table {
+  id        String   @id @default(cuid())
+  name      String
+  x         Float    // Position X
+  y         Float    // Position Y
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  columns   Column[]
+  
+  // Relations where this table is the source
+  sourceRelations Relation[] @relation("SourceTable")
+  
+  // Relations where this table is the target
+  targetRelations Relation[] @relation("TargetTable")
+}
+
+model Column {
+  id           String  @id @default(cuid())
+  name         String
+  type         String  // e.g. 'INT', 'VARCHAR'
+  isPrimaryKey Boolean @default(false)
+  isNullable   Boolean @default(false)
+  tableId      String
+  table        Table   @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  
+  // Relations involving this column
+  sourceRelations Relation[] @relation("SourceColumn")
+  targetRelations Relation[] @relation("TargetColumn")
+}
+
+model Relation {
+  id             String @id @default(cuid())
+  type           String // '1-1', '1-N', 'N-N'
+  
+  projectId      String
+  project        Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  sourceTableId  String
+  sourceTable    Table   @relation("SourceTable", fields: [sourceTableId], references: [id], onDelete: Cascade)
+
+  sourceColumnId String
+  sourceColumn   Column  @relation("SourceColumn", fields: [sourceColumnId], references: [id], onDelete: Cascade)
+
+  targetTableId  String
+  targetTable    Table   @relation("TargetTable", fields: [targetTableId], references: [id], onDelete: Cascade)
+
+  targetColumnId String
+  targetColumn   Column  @relation("TargetColumn", fields: [targetColumnId], references: [id], onDelete: Cascade)
+}
