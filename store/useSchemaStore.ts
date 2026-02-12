@@ -23,12 +23,21 @@ interface SchemaStore {
   currentProjectName: string;
   setCurrentProject: (id: string, name: string) => void;
   loadProjectSchema: (schema: { tables: Table[], relations: Relation[] }) => void;
+
+  // History
+  history: { tables: Table[]; relations: Relation[] }[];
+  future: { tables: Table[]; relations: Relation[] }[];
+  undo: () => void;
+  redo: () => void;
+  pushToHistory: () => void;
 }
 
 export const useSchemaStore = create<SchemaStore>((set) => ({
 
   tables: [],
   relations: [],
+  history: [],
+  future: [],
   selectedTableId: null,
   currentProjectId: null,
   currentProjectName: "Untitled Project",
@@ -115,5 +124,46 @@ export const useSchemaStore = create<SchemaStore>((set) => ({
   setSchema: (schema: Partial<SchemaStore>) => set((state) => ({
     tables: schema.tables || [],
     relations: schema.relations || [],
+    history: [], // Reset history on new schema load
+    future: [],
   })),
+
+  // --- History ---
+  pushToHistory: () => set((state) => {
+    // Limit history stack size if needed (e.g. 50)
+    const newHistory = [
+      ...state.history,
+      { tables: state.tables, relations: state.relations }
+    ].slice(-50);
+    return { history: newHistory, future: [] };
+  }),
+
+  undo: () => set((state) => {
+    if (state.history.length === 0) return {};
+
+    const previous = state.history[state.history.length - 1];
+    const newHistory = state.history.slice(0, -1);
+
+    return {
+      tables: previous.tables,
+      relations: previous.relations,
+      history: newHistory,
+      future: [{ tables: state.tables, relations: state.relations }, ...state.future],
+    };
+  }),
+
+  redo: () => set((state) => {
+    if (state.future.length === 0) return {};
+
+    const next = state.future[0];
+    const newFuture = state.future.slice(1);
+
+    return {
+      tables: next.tables,
+      relations: next.relations,
+      history: [...state.history, { tables: state.tables, relations: state.relations }],
+      future: newFuture,
+    };
+  }),
+
 }));

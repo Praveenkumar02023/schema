@@ -186,7 +186,12 @@ export default function SchemaCanvas() {
   const addRelation = useSchemaStore((state) => state.addRelation);
   const updateRelation = useSchemaStore((state) => state.updateRelation); // Added missing import
   const deleteRelation = useSchemaStore((state) => state.deleteRelation);
+  const deleteTable = useSchemaStore((state) => state.deleteTable);
   const setSelectedTableId = useSchemaStore((state) => state.setSelectedTableId);
+  const selectedTableId = useSchemaStore((state) => state.selectedTableId);
+  const undo = useSchemaStore((state) => state.undo);
+  const redo = useSchemaStore((state) => state.redo);
+  const pushToHistory = useSchemaStore((state) => state.pushToHistory);
 
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 
@@ -225,6 +230,10 @@ export default function SchemaCanvas() {
     },
     [onNodesChange, updateTablePosition]
   );
+
+  const onNodeDragStart = useCallback(() => {
+    pushToHistory();
+  }, [pushToHistory]);
 
   // --- Smart Edge Calculation ---
   const edges: Edge[] = useMemo(() => {
@@ -342,6 +351,7 @@ export default function SchemaCanvas() {
     const sourceColumnId = params.sourceHandle.replace(/-left|-right|-source|-target/g, '');
     const targetColumnId = params.targetHandle.replace(/-left|-right|-source|-target/g, '');
 
+    pushToHistory(); // Save before adding
     addRelation({
       id: crypto.randomUUID(),
       sourceTableId: params.source,
@@ -350,7 +360,7 @@ export default function SchemaCanvas() {
       targetColumnId,
       type: '1-N',
     });
-  }, [addRelation]);
+  }, [addRelation, pushToHistory]);
 
   // Click on the EDGE LINE itself
   const onEdgeClick = useCallback((_: any, edge: Edge) => {
@@ -359,16 +369,43 @@ export default function SchemaCanvas() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (selectedEdgeId && (event.key === 'Delete' || event.key === 'Backspace')) {
-        event.preventDefault();
-        deleteRelation(selectedEdgeId);
-        setSelectedEdgeId(null);
+      // Undo/Redo
+      if ((event.metaKey || event.ctrlKey) && event.key === 'z') {
+        if (event.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+        return;
+      }
+      if ((event.metaKey || event.ctrlKey) && event.key === 'y') {
+        redo();
+        return;
+      }
+
+      // Delete
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        const activeElement = document.activeElement?.tagName;
+        // Don't delete if user is typing in an input
+        if (activeElement === 'INPUT' || activeElement === 'TEXTAREA') return;
+
+        if (selectedEdgeId) {
+          event.preventDefault();
+          pushToHistory();
+          deleteRelation(selectedEdgeId);
+          setSelectedEdgeId(null);
+        } else if (selectedTableId) {
+          event.preventDefault();
+          pushToHistory();
+          deleteTable(selectedTableId);
+          setSelectedTableId(null);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedEdgeId, deleteRelation]);
+  }, [selectedEdgeId, selectedTableId, deleteRelation, deleteTable, undo, redo, pushToHistory, setSelectedTableId]);
 
   const onNodeClick = useCallback((_: any, node: Node) => {
     setSelectedTableId(node.id);
@@ -411,11 +448,6 @@ export default function SchemaCanvas() {
         minZoom={0.1}
         maxZoom={2}
 
-        nodesDraggable={true}
-        nodesConnectable={true}
-        elementsSelectable={true}
-        connectOnClick={false}
-
         connectionLineType={ConnectionLineType.SmoothStep}
         connectionLineStyle={connectionLineStyle}
         connectionMode={ConnectionMode.Loose}
@@ -424,6 +456,7 @@ export default function SchemaCanvas() {
         autoPanOnNodeDrag={true}
         panOnDrag={true}
         selectionOnDrag={false}
+        onNodeDragStart={onNodeDragStart}
         proOptions={{ hideAttribution: true }}
       >
         {/* Custom SVG Markers defined here */}
