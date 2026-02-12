@@ -1194,3 +1194,27 @@ body {
 .animate-content-reveal {
   animation: content-reveal 0.3s ease-out forwards;
 }
+
+/* FORCE MARQUEE FIX - OVERRIDE TAILWIND CONFIG */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+@keyframes marquee-reverse {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-marquee {
+  animation: marquee 300s linear infinite !important;
+  min-width: 200%;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 300s linear infinite !important;
+  min-width: 200%;
+}
+
+.hover\:pause:hover {
+  animation-play-state: paused !important;
+}
