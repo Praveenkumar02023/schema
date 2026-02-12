@@ -46,15 +46,9 @@ export default function SignInPage() {
           {/* Logo Section */}
           <div className="text-center mb-10">
             <Link href="/" className="inline-flex items-center gap-3 mb-6 group">
-              <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300 relative">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="z-10 text-emerald-500">
-                  <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 14L12 19L22 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 8V16" stroke="currentColor" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="13" r="1.5" fill="currentColor" />
-                </svg>
-              </div>
-              <span className="text-2xl font-bold tracking-tight text-zinc-100">DrawDB</span>
+              <span className="text-4xl font-bold tracking-tight" style={{ fontFamily: "'Caveat', cursive" }}>
+                <span className="text-white">Schema</span><span className="text-blue-500">Studio</span>
+              </span>
             </Link>
             <h1 className="text-3xl font-bold tracking-tight mb-3 text-white">Welcome back</h1>
             <p className="text-zinc-400">Sign in to your account to continue designing.</p>

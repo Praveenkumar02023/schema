@@ -158,18 +158,9 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
             {/* Left: Brand & File Title */}
             <div className="flex items-center gap-4">
                 <Link href="/dashboard" className="flex items-center gap-2 group">
-                    {/* New Logo: Abstract Stacked Layers */}
-                    <div className="w-8 h-8 relative flex items-center justify-center">
-                        <div className="absolute inset-0 bg-blue-500/20 rounded-lg blur-sm group-hover:bg-blue-500/30 transition-colors" />
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="z-10 text-blue-500">
-                            <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M2 14L12 19L22 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M2 8V16" stroke="currentColor" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round" />
-                            {/* Decorative dots */}
-                            <circle cx="12" cy="13" r="1.5" fill="currentColor" />
-                        </svg>
-                    </div>
-                    <span className="font-bold text-zinc-100 tracking-tight text-lg">DrawDB</span>
+                    <span className="font-bold tracking-tight text-3xl" style={{ fontFamily: "'Caveat', cursive" }}>
+                        <span className="text-zinc-100">Schema</span><span className="text-blue-500">Studio</span>
+                    </span>
                 </Link>
 
                 {/* Vertical Divider */}

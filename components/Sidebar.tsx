@@ -12,7 +12,11 @@ import {
   Settings2,
   GripVertical,
   CheckCircle2,
-  Loader2
+  Loader2,
+  User, Users, Package, ShoppingCart, MessageSquare,
+  Image as ImageIcon, FileText, Settings, Shield,
+  Calendar, MapPin, Tag, Link, BarChart3, CreditCard,
+  Building2, List
 } from 'lucide-react';
 import { exportToJSON, generateSQL } from '@/lib/exporter';
 import SidebarTableEditor from './SidebarTableEditor';
@@ -90,17 +94,11 @@ export default function ResizableSidebar() {
       {/* --- Header --- */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-800 bg-[#09090b] shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 relative">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="z-10 text-white">
-              <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 14L12 19L22 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 8V16" stroke="currentColor" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="12" cy="13" r="1.5" fill="currentColor" />
-            </svg>
-          </div>
           <div className="flex flex-col">
-            <h1 className="text-sm font-bold text-zinc-100 tracking-tight leading-none">DrawDB</h1>
-            <p className="text-[10px] text-zinc-500 font-mono mt-1">v1.0.0-beta</p>
+            <h1 className="text-3xl font-bold tracking-tight leading-none" style={{ fontFamily: "'Caveat', cursive" }}>
+              <span className="text-zinc-100">Schema</span><span className="text-blue-500">Studio</span>
+            </h1>
+            <p className="text-[10px] text-zinc-500 font-mono mt-1 pl-1">v1.0.0-beta</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -142,9 +140,35 @@ export default function ResizableSidebar() {
                     <ChevronRight size={12} strokeWidth={3} />
                   </span>
 
-                  <TableIcon size={14} className={cn(
-                    isSelected ? "text-zinc-100" : "text-zinc-600 group-hover:text-zinc-400"
-                  )} />
+                  {/* Icon Logic */}
+                  {(() => {
+                    const name = table.name.toLowerCase();
+                    let IconComponent = TableIcon; // Default to TableIcon
+
+                    if (name.includes('user') || name.includes('student') || name.includes('person') || name.includes('auth') || name.includes('account') || name.includes('profile')) IconComponent = Users;
+                    else if (name.includes('inventory') || name.includes('stock')) IconComponent = Package;
+                    else if (name.includes('product') || name.includes('item')) IconComponent = Package;
+                    else if (name.includes('order') || name.includes('cart') || name.includes('checkout') || name.includes('bill') || name.includes('invoice')) IconComponent = ShoppingCart;
+                    else if (name.includes('payment') || name.includes('transaction') || name.includes('card') || name.includes('wallet')) IconComponent = CreditCard;
+                    else if (name.includes('review') || name.includes('rating') || name.includes('feedback') || name.includes('star')) IconComponent = MessageSquare;
+                    else if (name.includes('message') || name.includes('chat') || name.includes('comment') || name.includes('post') || name.includes('feed') || name.includes('notification')) IconComponent = MessageSquare;
+                    else if (name.includes('file') || name.includes('doc') || name.includes('article') || name.includes('page') || name.includes('blog')) IconComponent = FileText;
+                    else if (name.includes('image') || name.includes('photo') || name.includes('media') || name.includes('video') || name.includes('gallery')) IconComponent = ImageIcon;
+                    else if (name.includes('setting') || name.includes('config') || name.includes('preference') || name.includes('option')) IconComponent = Settings;
+                    else if (name.includes('role') || name.includes('permission') || name.includes('access') || name.includes('token') || name.includes('audit')) IconComponent = Shield;
+                    else if (name.includes('date') || name.includes('event') || name.includes('schedule') || name.includes('time')) IconComponent = Calendar;
+                    else if (name.includes('address') || name.includes('location') || name.includes('country') || name.includes('city')) IconComponent = MapPin;
+                    else if (name.includes('tag') || name.includes('category') || name.includes('label') || name.includes('status') || name.includes('type')) IconComponent = List;
+                    else if (name.includes('link') || name.includes('url') || name.includes('relation') || name.includes('connect')) IconComponent = Link;
+                    else if (name.includes('analytic') || name.includes('stat') || name.includes('metric') || name.includes('report') || name.includes('dashboard')) IconComponent = BarChart3;
+                    else if (name.includes('org') || name.includes('company') || name.includes('team') || name.includes('business') || name.includes('agency')) IconComponent = Building2;
+                    else if (name.includes('log') || name.includes('history') || name.includes('record')) IconComponent = FileText;
+
+                    return <IconComponent size={14} className={cn(
+                      "transition-colors duration-200 shrink-0",
+                      isSelected ? "text-zinc-100" : "text-zinc-500 group-hover:text-zinc-300"
+                    )} />;
+                  })()}
 
                   <span className="truncate flex-1 font-mono font-medium tracking-tight">
                     {table.name}

@@ -91,14 +91,14 @@ export default function Home() {
                     <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
                   </div>
                   <div className="text-[10px] text-zinc-500 font-mono flex items-center gap-1">
-                    <Lock size={8} /> schema.drawdb
+                    <Lock size={8} /> schema.studio
                   </div>
                   <div className="w-10" />
                 </div>
 
                 <Image
                   src="/hero-diagram.png"
-                  alt="DrawDB Editor Interface"
+                  alt="SchemaStudio Editor Interface"
                   width={800}
                   height={600}
                   className="w-full h-auto opacity-90 group-hover:opacity-100 transition-opacity"
@@ -191,7 +191,7 @@ export default function Home() {
                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-blink" />
                     <span className="text-emerald-400 font-mono text-[10px] tracking-widest uppercase">Agent Active</span>
                   </div>
-                  <h3 className="text-3xl font-bold mb-3 text-white tracking-tight">DrawDB Architect</h3>
+                  <h3 className="text-3xl font-bold mb-3 text-white tracking-tight">SchemaStudio Architect</h3>
                   <p className="text-zinc-400 text-lg leading-relaxed">
                     Transform natural language into production-ready database schemas. The agent understands relationships, indexes, and constraints.
                   </p>
