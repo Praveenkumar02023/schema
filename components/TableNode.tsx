@@ -25,11 +25,11 @@ export default memo(function TableNode({ data, selected }: NodeProps) {
       className={cn(
         "flex flex-col min-w-[280px] rounded-xl overflow-hidden backdrop-blur-md will-change-transform backface-hidden transition-all duration-300",
         // Base Style
-        "bg-zinc-900/90 border-zinc-800",
+        "bg-[#09090b] border-zinc-700/50",
         // Selection State
         selected
-          ? "border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.2)] ring-1 ring-blue-500/20 transform scale-[1.01]"
-          : "border hover:border-zinc-700 hover:shadow-xl shadow-black/20"
+          ? "border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/20 transform scale-[1.01]"
+          : "border hover:border-zinc-600 hover:shadow-2xl shadow-black/40"
       )}
     >
       {/* Header */}

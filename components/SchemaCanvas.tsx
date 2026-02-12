@@ -426,10 +426,9 @@ export default function SchemaCanvas() {
   if (!mounted) return null;
 
   return (
-    <div className="h-full w-full bg-zinc-950 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.03),transparent_40%)] pointer-events-none" />
+    <div className="h-full w-full bg-[#18181b] relative overflow-hidden">
+      {/* Background Decor - Subtle radial glow only */}
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.2),transparent_60%)] pointer-events-none" />
 
       <ReactFlow
         nodes={nodes}
@@ -506,11 +505,11 @@ export default function SchemaCanvas() {
         </svg>
 
         <Background
-          gap={20}
-          size={1}
-          color="#3f3f46"
+          gap={24}
+          size={1.5}
+          color="#52525b"
           variant={BackgroundVariant.Dots}
-          className="opacity-20"
+          className="opacity-40"
         />
 
         <Panel position="bottom-center" className="mb-8 hidden sm:block">
