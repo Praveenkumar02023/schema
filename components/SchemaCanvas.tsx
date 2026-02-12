@@ -170,6 +170,7 @@ export default function SchemaCanvas() {
     data: { table },
     type: 'table',
     draggable: true,
+    zIndex: 10,
   })), [tables]); // Added tables dep
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -182,6 +183,7 @@ export default function SchemaCanvas() {
       data: { table },
       type: 'table',
       draggable: true,
+      zIndex: 10,
     })));
   }, [tables, setNodes]);
 
@@ -280,7 +282,7 @@ export default function SchemaCanvas() {
           cursor: 'pointer',
         },
         animated: false,
-        zIndex: isSelected ? 50 : 5,
+        zIndex: isSelected ? 5 : -1,
       };
     });
   }, [relations, selectedEdgeId, nodes]);
