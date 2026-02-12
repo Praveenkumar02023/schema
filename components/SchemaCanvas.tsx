@@ -45,14 +45,31 @@ function CustomEdge({
 }: EdgeProps) {
   const updateRelation = useSchemaStore((state) => state.updateRelation);
 
-  // Use offset to shift the vertical segment of the path
-  // If offset is 0, it behaves like a normal edge.
   const offset = typeof data?.offset === 'number' ? data.offset : 0;
 
-  // We explicitly calculate centerX to force separation of parallel vertical segments
-  // This physically moves the "step" of the line
-  const centerX = (sourceX + targetX) / 2 + offset;
-  const centerY = (sourceY + targetY) / 2 + offset;
+  // Dynamic Center Calculation to avoid cutting through nodes
+  let centerX = (sourceX + targetX) / 2;
+
+  // Gap to maintain between line and node
+  const safeGap = 80;
+
+  if (sourcePosition === 'right' && targetPosition === 'right') {
+    // Both Right: Route to the right of the right-most node
+    centerX = Math.max(sourceX, targetX) + safeGap + offset;
+  } else if (sourcePosition === 'left' && targetPosition === 'left') {
+    // Both Left: Route to the left of the left-most node
+    centerX = Math.min(sourceX, targetX) - safeGap - offset;
+  } else if (sourcePosition === 'right' && targetPosition === 'left') {
+    // Right to Left (Standard L->R flow)
+    // If nodes are crossing (Target is left of Source), push the vertical line outward?
+    // Actually, if crossing, (sx+tx)/2 is inside the overlap.
+    // But our handle strategy below tries to avoid this.
+    // If we are here, we trust the gap.
+    centerX = (sourceX + targetX) / 2 + offset;
+  } else if (sourcePosition === 'left' && targetPosition === 'right') {
+    // Left to Right (Reverse flow)
+    centerX = (sourceX + targetX) / 2 + offset;
+  }
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -63,7 +80,7 @@ function CustomEdge({
     targetPosition,
     borderRadius: 20,
     centerX,
-    centerY,
+    // let library calculate best centerY
   });
 
   const onLabelClick = (event: MouseEvent) => {
@@ -182,27 +199,66 @@ export default function SchemaCanvas() {
 
   // --- Smart Edge Calculation ---
   const edges: Edge[] = useMemo(() => {
-    // Map to track how many edges exist between each pair of tables
     const edgeGroups = new Map<string, number>();
 
     return relations.map((rel) => {
       // Group by sorted pair ID to handle bidirectional or multi-edge relations between same tables
-      // e.g. "users-posts" handles both users->posts and posts->users
       const pairKey = [rel.sourceTableId, rel.targetTableId].sort().join('-');
       const existingCount = edgeGroups.get(pairKey) || 0;
       edgeGroups.set(pairKey, existingCount + 1);
 
-      // Distinct Offsets for Separation
-      // 0 -> 0 (Straight center line)
-      // 1 -> 40 (Shifted Right/Down)
-      // 2 -> -40 (Shifted Left/Up)
-      // 3 -> 80
-      // 4 -> -80
+      // Determine optimal handles based on relative positions (using nodes for real-time drag updates)
+      const sourceNode = nodes.find((n) => n.id === rel.sourceTableId);
+      const targetNode = nodes.find((n) => n.id === rel.targetTableId);
+
+      const sourcePos = sourceNode?.position || { x: 0, y: 0 };
+      const targetPos = targetNode?.position || { x: 0, y: 0 };
+
+      let sourceHandleSuffix = 'right';
+      let targetHandleSuffix = 'left';
+
+      // Advanced Heuristics for clean layout
+      const nodeWidth = 300; // Slightly larger safety buffer for node width
+      const xDiff = targetPos.x - sourcePos.x;
+      const yDiff = targetPos.y - sourcePos.y;
+
+      // Increase safety threshold for L-R direct connections
+      // We only want L-R if there is PLENTY of space between them
+      if (xDiff > nodeWidth + 100) {
+        // Target is clearly to the Right with good gap
+        sourceHandleSuffix = 'right';
+        targetHandleSuffix = 'left';
+      } else if (xDiff < -(nodeWidth + 100)) {
+        // Target is clearly to the Left
+        sourceHandleSuffix = 'left';
+        targetHandleSuffix = 'right';
+      } else {
+        // Default to bus-style routing (Right-Right) for vertical stacks or close nodes
+        sourceHandleSuffix = 'right';
+        targetHandleSuffix = 'right';
+      }
+
+      // Calculate Offsets
+      // For Same-Side connections (R-R or L-L), we stack OUTWARD to avoid cutting back.
+      // For Cross connections (L-R), we alternate around the center.
       let offset = 0;
-      if (existingCount > 0) {
-        const multiplier = Math.ceil(existingCount / 2);
-        const direction = existingCount % 2 === 1 ? 1 : -1;
-        offset = multiplier * 40 * direction; // 40px gap between lines
+
+      const isSameSide = sourceHandleSuffix === targetHandleSuffix;
+
+      if (isSameSide) {
+        // Stack strictly outward: 0, 25, 50, 75...
+        // We use the count to spacing.
+        // Note: edgeGroups counts ALL edges between pair.
+        // We might want to separate A->B and B->A if we want distinct lines, 
+        // but grouping them is usually cleaner.
+        offset = existingCount * 25;
+      } else {
+        // Alternating: 0, 25, -25, 50, -50
+        if (existingCount > 0) {
+          const multiplier = Math.ceil(existingCount / 2);
+          const direction = existingCount % 2 === 1 ? 1 : -1;
+          offset = multiplier * 25 * direction;
+        }
       }
 
       const isSelected = selectedEdgeId === rel.id;
@@ -211,15 +267,15 @@ export default function SchemaCanvas() {
         id: rel.id,
         source: rel.sourceTableId,
         target: rel.targetTableId,
-        sourceHandle: `${rel.sourceColumnId}-source`,
-        targetHandle: `${rel.targetColumnId}-target`,
+        sourceHandle: `${rel.sourceColumnId}-${sourceHandleSuffix}`,
+        targetHandle: `${rel.targetColumnId}-${targetHandleSuffix}`,
         label: rel.type,
         type: 'custom',
         data: { offset },
         markerStart: getMarkerForRelationType(rel.type, 'start'),
         markerEnd: getMarkerForRelationType(rel.type, 'end'),
         style: {
-          stroke: isSelected ? '#3b82f6' : '#71717a', // zinc-500 unselected
+          stroke: isSelected ? '#3b82f6' : '#71717a',
           strokeWidth: isSelected ? 2.5 : 1.5,
           cursor: 'pointer',
         },
@@ -227,13 +283,15 @@ export default function SchemaCanvas() {
         zIndex: isSelected ? 50 : 5,
       };
     });
-  }, [relations, selectedEdgeId]);
+  }, [relations, selectedEdgeId, nodes]);
 
   const onConnect = useCallback((params: Connection) => {
     if (!params.source || !params.target || !params.sourceHandle || !params.targetHandle) return;
 
-    const sourceColumnId = params.sourceHandle.replace('-source', '');
-    const targetColumnId = params.targetHandle.replace('-target', '');
+    // Handle Loose connection mode where we might connect source-source, target-target, etc.
+    // Our handle IDs are formatted as `${colId}-left` or `${colId}-right`
+    const sourceColumnId = params.sourceHandle.replace(/-left|-right|-source|-target/g, '');
+    const targetColumnId = params.targetHandle.replace(/-left|-right|-source|-target/g, '');
 
     addRelation({
       id: crypto.randomUUID(),

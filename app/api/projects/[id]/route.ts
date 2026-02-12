@@ -100,8 +100,9 @@ export async function PUT(
 
             // 3. Recreate Tables & Columns
             if (tables && Array.isArray(tables)) {
-                for (const table of tables) {
-                    await tx.table.create({
+                // Use Promise.all for parallelism to speed up transaction
+                await Promise.all(tables.map((table: any) =>
+                    tx.table.create({
                         data: {
                             id: table.id,
                             name: table.name,
@@ -118,28 +119,30 @@ export async function PUT(
                                 })),
                             },
                         },
-                    });
-                }
+                    })
+                ));
             }
 
             // 4. Recreate Relations
-            if (relations && Array.isArray(relations)) {
-                for (const rel of relations) {
-                    await tx.relation.create({
-                        data: {
-                            id: rel.id,
-                            type: rel.type,
-                            projectId: id,
-                            sourceTableId: rel.sourceTableId,
-                            sourceColumnId: rel.sourceColumnId,
-                            targetTableId: rel.targetTableId,
-                            targetColumnId: rel.targetColumnId,
-                        }
-                    });
-                }
+            if (relations && Array.isArray(relations) && relations.length > 0) {
+                // Use createMany for better performance
+                await tx.relation.createMany({
+                    data: relations.map((rel: any) => ({
+                        id: rel.id,
+                        type: rel.type,
+                        projectId: id,
+                        sourceTableId: rel.sourceTableId,
+                        sourceColumnId: rel.sourceColumnId,
+                        targetTableId: rel.targetTableId,
+                        targetColumnId: rel.targetColumnId,
+                    }))
+                });
             }
 
             return updatedProject;
+        }, {
+            maxWait: 5000,
+            timeout: 20000, // Increase timeout to 20s to avoid P2028
         });
 
         const formattedProject = {

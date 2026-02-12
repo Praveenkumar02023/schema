@@ -90,9 +90,9 @@ export default memo(function TableNode({ data, selected }: NodeProps) {
             {/* Left Handle - Invisible hit area, visible dot */}
             <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center z-20">
               <Handle
-                type="target"
+                type="source"
                 position={Position.Left}
-                id={`${col.id}-target`}
+                id={`${col.id}-left`}
                 style={{
                   width: '8px',
                   height: '8px',
@@ -142,7 +142,7 @@ export default memo(function TableNode({ data, selected }: NodeProps) {
               <Handle
                 type="source"
                 position={Position.Right}
-                id={`${col.id}-source`}
+                id={`${col.id}-right`}
                 style={{
                   width: '8px',
                   height: '8px',
