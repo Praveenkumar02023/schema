@@ -14,10 +14,13 @@ import {
     FileCode,
     Image as ImageIcon,
     Play,
-    Save
+    Save,
+    Loader2,
+    CheckCircle2,
+    Cloud
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 interface EditorNavbarProps {
     projectId?: string;
@@ -29,7 +32,48 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isExportOpen, setIsExportOpen] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
+
+    // Auto-save state
+    const [savingStatus, setSavingStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
+    const isFirstRender = useRef(true);
+
+    // --- Auto Save Logic ---
+    useEffect(() => {
+        if (!projectId) return;
+
+        // Skip the very first render to avoid saving immediately on load
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        const saveData = async () => {
+            setSavingStatus('saving');
+            try {
+                const response = await fetch(`/api/projects/${projectId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: currentProjectName,
+                        tables,
+                        relations,
+                    }),
+                });
+
+                if (!response.ok) throw new Error('Failed to save');
+                setSavingStatus('saved');
+                setLastSaved(new Date());
+            } catch (error) {
+                console.error('Auto-save error:', error);
+                setSavingStatus('error');
+            }
+        };
+
+        // Debounce save (e.g. 10000ms)
+        const timeoutId = setTimeout(saveData, 10000);
+        return () => clearTimeout(timeoutId);
+    }, [tables, relations, currentProjectName, projectId]);
 
     const handleImportClick = () => fileInputRef.current?.click();
 
@@ -50,34 +94,6 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
             }
         };
         reader.readAsText(file);
-    };
-
-    const handleSave = async () => {
-        if (!projectId) return;
-        setIsSaving(true);
-        try {
-            const response = await fetch(`/api/projects/${projectId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: currentProjectName,
-                    tables,
-                    relations,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to save');
-            }
-            // Optional: show success toast
-        } catch (error) {
-            console.error('Error saving project:', error);
-            alert('Failed to save project');
-        } finally {
-            setIsSaving(false);
-        }
     };
 
     const handleExportJSON = () => {
@@ -136,16 +152,25 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
             {/* Middle: Quick Actions */}
             <div className="hidden md:flex items-center gap-1">
                 {/* Save Button */}
-                {projectId && (
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors disabled:opacity-50"
-                    >
-                        <Save size={14} className={isSaving ? "animate-pulse" : ""} />
-                        {isSaving ? "Saving..." : "Save"}
-                    </button>
-                )}
+                {/* Auto Save Status */}
+                <div className="flex items-center justify-end min-w-[100px] px-3">
+                    {savingStatus === 'saving' ? (
+                        <div className="flex items-center gap-2 text-blue-400 animate-pulse bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
+                            <Cloud size={12} className="animate-bounce" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Saving...</span>
+                        </div>
+                    ) : savingStatus === 'error' ? (
+                        <div className="flex items-center gap-2 text-red-400 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Error</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 text-zinc-500 hover:text-emerald-500 transition-colors cursor-help px-2 py-1"
+                            title={`Last saved: ${lastSaved?.toLocaleTimeString()}`}>
+                            <CheckCircle2 size={13} />
+                            <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline-block">Saved</span>
+                        </div>
+                    )}
+                </div>
                 <button
                     onClick={handleImportClick}
                     className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors"

@@ -10,7 +10,9 @@ import {
   Upload,
   ChevronRight,
   Settings2,
-  GripVertical
+  GripVertical,
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { exportToJSON, generateSQL } from '@/lib/exporter';
 import SidebarTableEditor from './SidebarTableEditor';
@@ -37,6 +39,10 @@ export default function ResizableSidebar() {
   const setSelectedTableId = useSchemaStore((state) => state.setSelectedTableId);
   const selectedTableId = useSchemaStore((state) => state.selectedTableId);
   const setSchema = useSchemaStore((state) => state.setSchema);
+  const currentProjectId = useSchemaStore((state) => state.currentProjectId);
+  const currentProjectName = useSchemaStore((state) => state.currentProjectName);
+
+  // --- Auto Save Logic Removed (Moved to Navbar) ---
 
   // ... (Keep existing resizing logic and handlers here) ...
   const startResizing = () => setIsResizing(true);
@@ -97,9 +103,11 @@ export default function ResizableSidebar() {
             <p className="text-[10px] text-zinc-500 font-mono mt-1">v1.0.0-beta</p>
           </div>
         </div>
-        <button className="p-1.5 hover:bg-zinc-900 rounded-md transition-colors text-zinc-500 hover:text-zinc-300">
-          <Settings2 size={16} />
-        </button>
+        <div className="flex items-center gap-3">
+          <button className="p-1.5 hover:bg-zinc-900 rounded-md transition-colors text-zinc-500 hover:text-zinc-300">
+            <Settings2 size={16} />
+          </button>
+        </div>
       </div>
 
       {/* --- Scrollable Content (NO SCROLLBAR) --- */}
