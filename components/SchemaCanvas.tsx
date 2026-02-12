@@ -104,7 +104,7 @@ function CustomEdge({
             position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             pointerEvents: 'all',
-            zIndex: 100, // Ensure label is interactive and above other elements
+            zIndex: 9, // Ensure label is below tables (10) but above edges
           }}
           className="nodrag nopan"
         >
