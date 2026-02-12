@@ -27,16 +27,55 @@ interface EditorNavbarProps {
 }
 
 export default function EditorNavbar({ projectId }: EditorNavbarProps) {
-    const { tables, relations, setSchema, currentProjectName } = useSchemaStore();
+    const { tables, relations, setSchema, currentProjectName, updateProjectName } = useSchemaStore();
     const { data: session } = useSession();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isExportOpen, setIsExportOpen] = useState(false);
 
+    // Project Name Edit State
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState('');
+    const nameInputRef = useRef<HTMLInputElement>(null);
+
     // Auto-save state
     const [savingStatus, setSavingStatus] = useState<'saved' | 'saving' | 'error'>('saved');
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const isFirstRender = useRef(true);
+
+    const handleNameClick = () => {
+        setTempName(currentProjectName);
+        setIsEditingName(true);
+        setTimeout(() => nameInputRef.current?.focus(), 0);
+    };
+
+    const handleNameKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') handleNameSubmit();
+        if (e.key === 'Escape') setIsEditingName(false);
+    };
+
+    // --- Save Logic ---
+    const saveProject = async (name: string, currentTables: typeof tables, currentRelations: typeof relations) => {
+        setSavingStatus('saving');
+        try {
+            const response = await fetch(`/api/projects/${projectId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: name,
+                    tables: currentTables,
+                    relations: currentRelations,
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to save');
+            setSavingStatus('saved');
+            setLastSaved(new Date());
+        } catch (error) {
+            console.error('Save error:', error);
+            setSavingStatus('error');
+        }
+    };
 
     // --- Auto Save Logic ---
     useEffect(() => {
@@ -48,32 +87,27 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
             return;
         }
 
-        const saveData = async () => {
-            setSavingStatus('saving');
-            try {
-                const response = await fetch(`/api/projects/${projectId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: currentProjectName,
-                        tables,
-                        relations,
-                    }),
-                });
-
-                if (!response.ok) throw new Error('Failed to save');
-                setSavingStatus('saved');
-                setLastSaved(new Date());
-            } catch (error) {
-                console.error('Auto-save error:', error);
-                setSavingStatus('error');
-            }
-        };
-
         // Debounce save (e.g. 10000ms)
-        const timeoutId = setTimeout(saveData, 10000);
+        const timeoutId = setTimeout(() => {
+            saveProject(currentProjectName, tables, relations);
+        }, 10000);
+
         return () => clearTimeout(timeoutId);
     }, [tables, relations, currentProjectName, projectId]);
+
+    const handleNameSubmit = () => {
+        const newName = tempName.trim();
+        if (newName && newName !== currentProjectName) {
+            updateProjectName(newName);
+            setIsEditingName(false);
+            // Trigger immediate save for name changes
+            if (projectId) {
+                saveProject(newName, tables, relations);
+            }
+        } else {
+            setIsEditingName(false);
+        }
+    };
 
     const handleImportClick = () => fileInputRef.current?.click();
 
@@ -142,10 +176,27 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
                 <div className="h-6 w-px bg-zinc-800" />
 
                 {/* File Info */}
+                {/* File Info */}
                 <div className="flex items-center gap-2">
-                    <div className="text-sm font-medium text-zinc-300 hover:text-white cursor-pointer px-2 py-1 rounded hover:bg-zinc-800 transition-colors">
-                        {currentProjectName || 'Untitled Project'}
-                    </div>
+                    {isEditingName ? (
+                        <input
+                            ref={nameInputRef}
+                            type="text"
+                            value={tempName}
+                            onChange={(e) => setTempName(e.target.value)}
+                            onBlur={handleNameSubmit}
+                            onKeyDown={handleNameKeyDown}
+                            className="bg-zinc-900 border border-blue-500/50 text-white text-sm font-medium px-2 py-0.5 rounded outline-none w-[200px]"
+                        />
+                    ) : (
+                        <div
+                            onClick={handleNameClick}
+                            className="text-sm font-medium text-zinc-300 hover:text-white cursor-pointer px-2 py-1 rounded hover:bg-zinc-800 transition-colors border border-transparent hover:border-zinc-700 select-none"
+                            title="Click to rename"
+                        >
+                            {currentProjectName || 'Untitled Project'}
+                        </div>
+                    )}
                 </div>
             </div>
 

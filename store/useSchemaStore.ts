@@ -22,6 +22,7 @@ interface SchemaStore {
   currentProjectId: string | null;
   currentProjectName: string;
   setCurrentProject: (id: string, name: string) => void;
+  updateProjectName: (name: string) => void;
   loadProjectSchema: (schema: { tables: Table[], relations: Relation[] }) => void;
 
   // History
@@ -43,6 +44,7 @@ export const useSchemaStore = create<SchemaStore>((set) => ({
   currentProjectName: "Untitled Project",
 
   setCurrentProject: (id: string, name: string) => set({ currentProjectId: id, currentProjectName: name }),
+  updateProjectName: (name: string) => set({ currentProjectName: name }),
 
   loadProjectSchema: (schema: { tables: Table[], relations: Relation[] }) => set({ tables: schema.tables, relations: schema.relations }),
 

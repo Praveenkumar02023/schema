@@ -3,7 +3,13 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Table } from '@/lib/types';
-import { Key, MoreVertical, Columns, User, Package, ShoppingCart, MessageSquare } from 'lucide-react';
+import {
+  Key, MoreVertical, Columns,
+  User, Users, Package, ShoppingCart, MessageSquare,
+  Image as ImageIcon, FileText, Settings, Shield,
+  Calendar, MapPin, Tag, Link, BarChart3, CreditCard,
+  Table as TableIcon
+} from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -44,10 +50,21 @@ export default memo(function TableNode({ data, selected }: NodeProps) {
             const name = table.name.toLowerCase();
             let IconComponent = null;
 
-            if (name.includes('user') || name.includes('student') || name.includes('person') || name.includes('people') || name.includes('auth')) IconComponent = <User size={14} strokeWidth={2.5} />;
-            else if (name.includes('product') || name.includes('item') || name.includes('inventory')) IconComponent = <Package size={14} strokeWidth={2.5} />;
-            else if (name.includes('order') || name.includes('cart') || name.includes('checkout')) IconComponent = <ShoppingCart size={14} strokeWidth={2.5} />;
-            else if (name.includes('message') || name.includes('chat') || name.includes('comment') || name.includes('post')) IconComponent = <MessageSquare size={14} strokeWidth={2.5} />;
+            if (name.includes('user') || name.includes('student') || name.includes('person') || name.includes('auth') || name.includes('account') || name.includes('profile')) IconComponent = <Users size={14} strokeWidth={2.5} />;
+            else if (name.includes('product') || name.includes('item') || name.includes('inventory') || name.includes('stock')) IconComponent = <Package size={14} strokeWidth={2.5} />;
+            else if (name.includes('order') || name.includes('cart') || name.includes('checkout') || name.includes('bill') || name.includes('invoice')) IconComponent = <ShoppingCart size={14} strokeWidth={2.5} />;
+            else if (name.includes('payment') || name.includes('transaction') || name.includes('card') || name.includes('wallet')) IconComponent = <CreditCard size={14} strokeWidth={2.5} />;
+            else if (name.includes('message') || name.includes('chat') || name.includes('comment') || name.includes('post') || name.includes('feed') || name.includes('notification')) IconComponent = <MessageSquare size={14} strokeWidth={2.5} />;
+            else if (name.includes('file') || name.includes('doc') || name.includes('article') || name.includes('page') || name.includes('blog')) IconComponent = <FileText size={14} strokeWidth={2.5} />;
+            else if (name.includes('image') || name.includes('photo') || name.includes('media') || name.includes('video') || name.includes('gallery')) IconComponent = <ImageIcon size={14} strokeWidth={2.5} />;
+            else if (name.includes('setting') || name.includes('config') || name.includes('preference') || name.includes('option')) IconComponent = <Settings size={14} strokeWidth={2.5} />;
+            else if (name.includes('role') || name.includes('permission') || name.includes('access') || name.includes('token') || name.includes('audit')) IconComponent = <Shield size={14} strokeWidth={2.5} />;
+            else if (name.includes('date') || name.includes('event') || name.includes('schedule') || name.includes('log') || name.includes('history')) IconComponent = <Calendar size={14} strokeWidth={2.5} />;
+            else if (name.includes('address') || name.includes('location') || name.includes('country') || name.includes('city')) IconComponent = <MapPin size={14} strokeWidth={2.5} />;
+            else if (name.includes('tag') || name.includes('category') || name.includes('label') || name.includes('status') || name.includes('type')) IconComponent = <Tag size={14} strokeWidth={2.5} />;
+            else if (name.includes('link') || name.includes('url') || name.includes('relation') || name.includes('connect')) IconComponent = <Link size={14} strokeWidth={2.5} />;
+            else if (name.includes('analytic') || name.includes('stat') || name.includes('metric') || name.includes('report') || name.includes('dashboard')) IconComponent = <BarChart3 size={14} strokeWidth={2.5} />;
+            else IconComponent = <TableIcon size={14} strokeWidth={2.5} />;
 
             if (!IconComponent) return null;
 
