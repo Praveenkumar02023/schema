@@ -97,31 +97,13 @@ export default function Home() {
                 </div>
 
                 <Image
-                  src="/hero-diagram.png"
+                  src="/hero-screenshot.png"
                   alt="SchemaStudio Editor Interface"
-                  width={800}
-                  height={600}
+                  width={1400}
+                  height={1200}
                   className="w-full h-auto opacity-90 group-hover:opacity-100 transition-opacity"
                   priority
                 />
-
-                {/* Floating Elements on top of image */}
-                <div className="absolute bottom-6 right-6 flex flex-col gap-2">
-                  <div className="bg-zinc-900/90 backdrop-blur border border-zinc-700/50 p-3 rounded-lg shadow-xl animate-float-delayed">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-6 h-6 rounded-md bg-emerald-500/20 flex items-center justify-center">
-                        <FileText size={12} className="text-emerald-400" />
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-bold text-zinc-300">Export SQL</div>
-                        <div className="text-[8px] text-zinc-500">PostgreSQL, MySQL</div>
-                      </div>
-                    </div>
-                    <div className="h-1 w-24 bg-zinc-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500 w-2/3 animate-pulse"></div>
-                    </div>
-                  </div>
-                </div>
 
               </div>
             </div>
@@ -841,7 +823,7 @@ export default function Home() {
             <h2 className="text-4xl font-bold mb-6 bg-gradient-to-br from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
               Frequently Asked Questions
             </h2>
-            <p className="text-lg text-zinc-400">Everything you need to know about DrawDB.</p>
+            <p className="text-lg text-zinc-400">Everything you need to know about SchemaStudio.</p>
           </div>
 
           <div className="space-y-4">
@@ -889,7 +871,7 @@ const reviews = [
     name: "Alex Rivera",
     role: "CTO",
     company: "StartUp",
-    text: "The real-time collaboration saves us hours every week. We went from whiteboards to DrawDB and never looked back.",
+    text: "The real-time collaboration saves us hours every week. We went from whiteboards to SchemaStudio and never looked back.",
     stack: "MySQL",
     image: "https://i.pravatar.cc/150?u=alex"
   },
@@ -995,13 +977,9 @@ function Footer() {
           {/* Column 1: Branding */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-blue-500">
-                <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 14L12 19L22 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 8V16" stroke="currentColor" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="12" cy="13" r="1.5" fill="currentColor" />
-              </svg>
-              <span className="text-xl font-bold text-white">DrawDB</span>
+              <span className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Caveat', cursive" }}>
+                <span className="text-white">Schema</span><span className="text-blue-500">Studio</span>
+              </span>
             </div>
             <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">
               Instantly visualize your database schema and generate ER diagrams.
