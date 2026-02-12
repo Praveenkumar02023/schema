@@ -26,7 +26,34 @@ import {
 } from '@xyflow/react';
 import { useSchemaStore } from '../store/useSchemaStore';
 import TableNode from './TableNode';
-import { RelationType } from '@/lib/types';
+import { RelationType, Table } from '@/lib/types';
+import { useRef } from 'react';
+
+// --- Auto Layout Helper ---
+function AutoLayout({ tables }: { tables: Table[] }) {
+  const { fitView } = useReactFlow();
+  // Create a stable hash of table IDs to detect structural changes (add/remove/import)
+  const tableIdsHash = tables.map((t) => t.id).sort().join(',');
+  const prevHashRef = useRef(tableIdsHash);
+
+  useEffect(() => {
+    // Only trigger if hash changes AND we have tables
+    if (tableIdsHash !== prevHashRef.current && tables.length > 0) {
+      // Small timeout to ensure nodes are rendered/measured
+      const timer = setTimeout(() => {
+        fitView({ padding: 0.2, duration: 800 });
+      }, 50);
+      prevHashRef.current = tableIdsHash;
+      return () => clearTimeout(timer);
+    }
+    // Update ref if empty to allow future triggers
+    if (tables.length === 0) {
+      prevHashRef.current = '';
+    }
+  }, [tableIdsHash, fitView, tables.length]);
+
+  return null;
+}
 
 // --- Custom Edge Component ---
 function CustomEdge({
@@ -219,26 +246,46 @@ export default function SchemaCanvas() {
       let sourceHandleSuffix = 'right';
       let targetHandleSuffix = 'left';
 
-      // Advanced Heuristics for clean layout
-      const nodeWidth = 300; // Slightly larger safety buffer for node width
-      const xDiff = targetPos.x - sourcePos.x;
-      const yDiff = targetPos.y - sourcePos.y;
+      // --- Shortest Path Routing ---
+      // Instead of forcing a layout, we calculate the physical distance between all 4 handle combinations
+      // and pick the shortest one. This naturally respects how the user positions the tables.
 
-      // Increase safety threshold for L-R direct connections
-      // We only want L-R if there is PLENTY of space between them
-      if (xDiff > nodeWidth + 100) {
-        // Target is clearly to the Right with good gap
-        sourceHandleSuffix = 'right';
-        targetHandleSuffix = 'left';
-      } else if (xDiff < -(nodeWidth + 100)) {
-        // Target is clearly to the Left
-        sourceHandleSuffix = 'left';
-        targetHandleSuffix = 'right';
-      } else {
-        // Default to bus-style routing (Right-Right) for vertical stacks or close nodes
-        sourceHandleSuffix = 'right';
-        targetHandleSuffix = 'right';
+      const nodeWidth = 300; // Assuming a standard node width for handle position estimation
+      const nodeHeight = 100; // Assuming a standard node height for handle position estimation
+
+      // Estimate handle positions (center of left/right side)
+      const sourceLeft = { x: sourcePos.x, y: sourcePos.y + nodeHeight / 2 };
+      const sourceRight = { x: sourcePos.x + nodeWidth, y: sourcePos.y + nodeHeight / 2 };
+      const targetLeft = { x: targetPos.x, y: targetPos.y + nodeHeight / 2 };
+      const targetRight = { x: targetPos.x + nodeWidth, y: targetPos.y + nodeHeight / 2 };
+
+      // Helper to calc distance
+      const getDist = (p1: { x: number, y: number }, p2: { x: number, y: number }) =>
+        Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+
+      const options = [
+        { s: 'left', t: 'left', d: getDist(sourceLeft, targetLeft) },
+        { s: 'left', t: 'right', d: getDist(sourceLeft, targetRight) },
+        { s: 'right', t: 'left', d: getDist(sourceRight, targetLeft) },
+        { s: 'right', t: 'right', d: getDist(sourceRight, targetRight) },
+      ];
+
+      // Sort by distance
+      options.sort((a, b) => a.d - b.d);
+
+      // Pick shortest
+      let best = options[0];
+
+      // Tie-breaker: If Right-Right is within a small margin of the best (e.g. vertical stack), prefer Right-Right
+      // This keeps vertical stacks clean (bus style) instead of random L-L or R-R switching
+      const rrOption = options.find(o => o.s === 'right' && o.t === 'right');
+      if (rrOption && rrOption.d < best.d + 150) {
+        best = rrOption;
       }
+
+      sourceHandleSuffix = best.s;
+      targetHandleSuffix = best.t;
+
 
       // Calculate Offsets
       // For Same-Side connections (R-R or L-L), we stack OUTWARD to avoid cutting back.
@@ -453,6 +500,8 @@ export default function SchemaCanvas() {
             />
           </div>
         </Panel>
+
+        <AutoLayout tables={tables} />
 
       </ReactFlow>
     </div>
