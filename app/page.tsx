@@ -9,6 +9,7 @@ import { companies } from '@/components/CompanyLogos';
 
 export default function Home() {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -661,174 +662,143 @@ export default function Home() {
         <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-zinc-950 to-transparent pointer-events-none" />
       </section>
 
-      {/* Pricing Section - Redesigned */}
-      <section className="py-32 bg-zinc-950 relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-[150px]" />
+      {/* Pricing Section - Comparison Table Redesign */}
+      <section className="py-32 bg-zinc-950 relative overflow-hidden" id="pricing">
+        {/* Blueish Ambience */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900/50 text-xs font-medium text-zinc-400 mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Flexible pricing
+
+          {/* Header & Toggle */}
+          <div className="flex flex-col lg:flex-row justify-between items-end mb-20 gap-8">
+            <div className="max-w-2xl">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">
+                Compare Plans
+              </h2>
+              <p className="text-xl text-zinc-400 leading-relaxed">
+                Choose the perfect plan for your team. From hobby projects to enterprise-scale database architecture.
+              </p>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
-              Choose your plan
-            </h2>
-            <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              Start free and scale as you grow. All plans include core features.
-            </p>
+
+            {/* Billing Toggle */}
+            <div className="bg-zinc-900/50 p-1 rounded-xl border border-zinc-800 flex items-center relative">
+              {/* Sliding Pill */}
+              <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-800 rounded-lg shadow-sm transition-all duration-300 ${billingCycle === 'yearly' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-1'}`} />
+
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={`relative z-10 px-6 py-2 text-sm font-medium transition-colors duration-300 ${billingCycle === 'monthly' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Bill Monthly
+              </button>
+              <button
+                onClick={() => setBillingCycle('yearly')}
+                className={`relative z-10 px-6 py-2 text-sm font-medium transition-colors duration-300 ${billingCycle === 'yearly' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Bill Yearly <span className="text-[10px] text-emerald-400 ml-1 font-mono">-20%</span>
+              </button>
+            </div>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start max-w-6xl mx-auto">
+          {/* Comparison Grid */}
+          <div className="border border-zinc-800 rounded-3xl bg-zinc-900/20 backdrop-blur-sm overflow-hidden relative">
 
-            {/* Free Tier */}
-            <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-b from-zinc-800/50 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative bg-zinc-900/40 backdrop-blur-xl rounded-2xl p-8 border border-zinc-800 hover:border-zinc-700 transition-all duration-300">
-                <div className="mb-8">
-                  <h3 className="text-lg font-bold text-zinc-300 mb-2">Free</h3>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-5xl font-bold text-white">$0</span>
-                    <span className="text-zinc-500 text-sm font-medium">/month</span>
-                  </div>
-                  <p className="text-zinc-500 text-sm">Perfect for getting started</p>
-                </div>
-
-                <Link
-                  href="/signin"
-                  className="block w-full py-3 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-center transition-colors mb-8"
-                >
-                  Get started
-                </Link>
-
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-zinc-600 mt-0.5 shrink-0" />
-                    <span className="text-zinc-400 text-sm">1 public project</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-zinc-600 mt-0.5 shrink-0" />
-                    <span className="text-zinc-400 text-sm">Basic SQL export</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-zinc-600 mt-0.5 shrink-0" />
-                    <span className="text-zinc-400 text-sm">Community support</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-zinc-600 mt-0.5 shrink-0" />
-                    <span className="text-zinc-400 text-sm">Up to 50 tables</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Pro Tier - Featured */}
-            <div className="group relative md:-mt-4">
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent rounded-2xl blur-2xl opacity-60" />
-
-              {/* Popular badge */}
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-                <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold uppercase tracking-wide shadow-lg">
-                  Most Popular
-                </div>
+            {/* Grid Header */}
+            <div className="grid grid-cols-4 border-b border-zinc-800 bg-zinc-900/50">
+              <div className="p-8 flex flex-col justify-end border-r border-zinc-800/50">
+                <span className="text-zinc-400 font-medium">Select a plan</span>
               </div>
 
-              <div className="relative bg-zinc-900/60 backdrop-blur-xl rounded-2xl p-8 border border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-300 shadow-[0_0_50px_rgba(16,185,129,0.1)]">
-                <div className="mb-8">
-                  <h3 className="text-lg font-bold text-white mb-2">Pro</h3>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-5xl font-bold text-white">$12</span>
-                    <span className="text-zinc-400 text-sm font-medium">/month</span>
-                  </div>
-                  <p className="text-zinc-400 text-sm">For professional developers</p>
+              {/* Free */}
+              <div className="p-8 border-r border-zinc-800/50 relative group">
+                <h3 className="font-bold text-zinc-200 mb-2">Free</h3>
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="text-3xl font-bold text-white">$0</span>
+                  <span className="text-zinc-500 text-sm">/mo</span>
                 </div>
-
-                <Link
-                  href="/signin"
-                  className="block w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-center transition-all shadow-lg shadow-emerald-900/20 mb-8"
-                >
-                  Start free trial
-                </Link>
-
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-emerald-500 mt-0.5 shrink-0" />
-                    <span className="text-zinc-300 text-sm font-medium">Unlimited projects</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-emerald-500 mt-0.5 shrink-0" />
-                    <span className="text-zinc-300 text-sm font-medium">Real-time collaboration</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-emerald-500 mt-0.5 shrink-0" />
-                    <span className="text-zinc-300 text-sm font-medium">Advanced SQL generation</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-emerald-500 mt-0.5 shrink-0" />
-                    <span className="text-zinc-300 text-sm font-medium">Version history (30 days)</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-emerald-500 mt-0.5 shrink-0" />
-                    <span className="text-zinc-300 text-sm font-medium">Priority support</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Team Tier */}
-            <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-b from-zinc-800/50 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative bg-zinc-900/40 backdrop-blur-xl rounded-2xl p-8 border border-zinc-800 hover:border-zinc-700 transition-all duration-300">
-                <div className="mb-8">
-                  <h3 className="text-lg font-bold text-zinc-300 mb-2">Team</h3>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-5xl font-bold text-white">$49</span>
-                    <span className="text-zinc-500 text-sm font-medium">/month</span>
-                  </div>
-                  <p className="text-zinc-500 text-sm">For growing teams</p>
-                </div>
-
-                <button className="w-full py-3 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-colors mb-8">
-                  Contact sales
+                <button className="w-full py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-colors border border-zinc-700">
+                  Get Started
                 </button>
+              </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-zinc-600 mt-0.5 shrink-0" />
-                    <span className="text-zinc-400 text-sm">Everything in Pro</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-zinc-600 mt-0.5 shrink-0" />
-                    <span className="text-zinc-400 text-sm">SSO & SAML</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-zinc-600 mt-0.5 shrink-0" />
-                    <span className="text-zinc-400 text-sm">Unlimited version history</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-zinc-600 mt-0.5 shrink-0" />
-                    <span className="text-zinc-400 text-sm">Advanced permissions</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-zinc-600 mt-0.5 shrink-0" />
-                    <span className="text-zinc-400 text-sm">Dedicated support</span>
-                  </div>
+              {/* Pro */}
+              <div className="p-8 border-r border-zinc-800/50 bg-blue-500/5 relative">
+                <div className="absolute top-0 inset-x-0 h-1 bg-blue-500" />
+                <h3 className="font-bold text-blue-400 mb-2 flex items-center gap-2">
+                  Pro <span className="bg-blue-500/10 text-blue-400 text-[10px] px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wide">Popular</span>
+                </h3>
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="text-3xl font-bold text-white">${billingCycle === 'yearly' ? '12' : '15'}</span>
+                  <span className="text-zinc-500 text-sm">/mo</span>
                 </div>
+                <button className="w-full py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors shadow-[0_0_15px_rgba(37,99,235,0.3)]">
+                  Start Trial
+                </button>
+              </div>
+
+              {/* Team */}
+              <div className="p-8">
+                <h3 className="font-bold text-zinc-200 mb-2">Team</h3>
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="text-3xl font-bold text-white">${billingCycle === 'yearly' ? '49' : '59'}</span>
+                  <span className="text-zinc-500 text-sm">/mo</span>
+                </div>
+                <button className="w-full py-2 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-sm font-medium transition-colors">
+                  Contact Sales
+                </button>
               </div>
             </div>
 
-          </div>
+            {/* Features Rows */}
+            <div className="divide-y divide-zinc-800/50">
+              {[
+                { name: "Public Projects", free: "Unlimited", pro: "Unlimited", team: "Unlimited" },
+                { name: "Private Projects", free: "3", pro: "Unlimited", team: "Unlimited" },
+                { name: "Tables per Project", free: "50", pro: "Unlimited", team: "Unlimited" },
+                { name: "Real-time Collaboration", free: false, pro: true, team: true },
+                { name: "AI Assistant", free: false, pro: "Standard", team: "Advanced" },
+                { name: "SQL Export", free: "Basic", pro: "Advanced", team: "Custom" },
+                { name: "Version History", free: "24 hours", pro: "30 days", team: "Unlimited" },
+                { name: "Team Management", free: false, pro: false, team: true },
+                { name: "SSO / SAML", free: false, pro: false, team: true },
+                { name: "Priority Support", free: false, pro: true, team: "Dedicated" },
+              ].map((feature, i) => (
+                <div key={i} className="grid grid-cols-4 hover:bg-white/[0.02] transition-colors group">
+                  <div className="p-5 pl-8 border-r border-zinc-800/50 text-sm font-medium text-zinc-400 group-hover:text-zinc-200 transition-colors flex items-center">
+                    {feature.name}
+                  </div>
 
-          {/* Bottom note */}
-          <div className="mt-12 text-center">
-            <p className="text-zinc-500 text-sm">
-              All plans include a 14-day free trial. No credit card required.
-            </p>
+                  {/* Free Cell */}
+                  <div className="p-5 border-r border-zinc-800/50 flex justify-center items-center text-sm text-zinc-400">
+                    {typeof feature.free === 'boolean' ? (
+                      feature.free ? <Check size={18} className="text-zinc-200" /> : <div className="w-4 h-px bg-zinc-700" />
+                    ) : (
+                      feature.free
+                    )}
+                  </div>
+
+                  {/* Pro Cell */}
+                  <div className="p-5 border-r border-zinc-800/50 flex justify-center items-center text-sm font-medium text-blue-200 bg-blue-500/[0.02]">
+                    {typeof feature.pro === 'boolean' ? (
+                      feature.pro ? <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center"><Check size={14} className="text-blue-400" /></div> : <div className="w-4 h-px bg-zinc-700" />
+                    ) : (
+                      feature.pro === "Standard" ? <span className="text-blue-400">Standard</span> : feature.pro
+                    )}
+                  </div>
+
+                  {/* Team Cell */}
+                  <div className="p-5 flex justify-center items-center text-sm font-medium text-white">
+                    {typeof feature.team === 'boolean' ? (
+                      feature.team ? <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center"><Check size={14} className="text-white" /></div> : <div className="w-4 h-px bg-zinc-700" />
+                    ) : (
+                      feature.team
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       </section>
