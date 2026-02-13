@@ -1197,12 +1197,23 @@ body {
 
 /* FORCE MARQUEE FIX - OVERRIDE TAILWIND CONFIG */
 @keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
 }
+
 @keyframes marquee-reverse {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(0%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(0%);
+  }
 }
 
 .animate-marquee {
@@ -1217,4 +1228,22 @@ body {
 
 .hover\:pause:hover {
   animation-play-state: paused !important;
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-from-right-8 {
+  animation-name: slide-in-right;
+  animation-duration: 0.5s;
+  animation-fill-mode: both;
 }

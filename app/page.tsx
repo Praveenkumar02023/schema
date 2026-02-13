@@ -4,9 +4,19 @@ import { Database, Zap, Users, Shield, ArrowRight, Star, Check, MessageSquare, L
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
+import { useState, useEffect } from 'react';
 import { companies } from '@/components/CompanyLogos';
 
 export default function Home() {
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentReviewIndex((prev) => (prev + 1) % reviews.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white selection:bg-blue-500/30">
       <Navbar />
@@ -617,23 +627,33 @@ export default function Home() {
         </div>
 
         {/* Marquee Container */}
-        <div className="flex flex-col gap-8 marquee-mask relative z-0">
-
-          {/* Row 1: Left Scroll */}
-          <div className="flex gap-8 animate-marquee w-max hover:pause">
-            {[...reviews, ...reviews, ...reviews, ...reviews].map((review, i) => (
-              <ReviewCard key={`r1-${i}`} review={review} />
-            ))}
+        {/* Single Review Cycle Container - Showing 3 at a time */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <div className="relative min-h-[300px]">
+            {/* Animate key change to trigger re-render of animation */}
+            <div
+              key={currentReviewIndex}
+              className="animate-in fade-in slide-in-from-right-8 duration-500 grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              {[0, 1, 2].map((offset) => {
+                const review = reviews[(currentReviewIndex + offset) % reviews.length];
+                return <ReviewCard key={`${review.name}-${offset}`} review={review} />;
+              })}
+            </div>
           </div>
 
-
-          {/* Row 2: Right Scroll */}
-          <div className="flex gap-8 animate-marquee-reverse w-max hover:pause">
-            {[...reviewsReverse, ...reviewsReverse, ...reviewsReverse, ...reviewsReverse].map((review, i) => (
-              <ReviewCard key={`r2-${i}`} review={review} />
+          {/* Indicators */}
+          <div className="flex justify-center gap-3 mt-12">
+            {reviews.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentReviewIndex(i)}
+                className={`h-2 rounded-full transition-all duration-300 ${i === currentReviewIndex ? 'w-8 bg-emerald-500' : 'w-2 bg-zinc-800 hover:bg-zinc-700'
+                  }`}
+                aria-label={`Go to review ${i + 1}`}
+              />
             ))}
           </div>
-
         </div>
 
         {/* Gradient Overlay Details */}
@@ -901,11 +921,11 @@ const reviews = [
   },
 ];
 
-const reviewsReverse = [...reviews].reverse();
+
 
 function ReviewCard({ review }: { review: any }) {
   return (
-    <div className="w-[450px] p-6 rounded-2xl bg-zinc-900/40 backdrop-blur-xl border border-zinc-800 hover:border-zinc-600 transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] group cursor-default relative overflow-hidden">
+    <div className="w-full max-w-[500px] p-8 rounded-3xl bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/60 hover:border-zinc-700 transition-all duration-300 shadow-2xl group cursor-default relative overflow-hidden">
 
       {/* Subtle background gradient on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
