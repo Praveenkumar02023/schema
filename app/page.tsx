@@ -1036,9 +1036,9 @@ function Footer() {
           <div className="space-y-6">
             <h4 className="font-bold text-white text-sm">Product</h4>
             <ul className="space-y-3 text-sm text-zinc-500">
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Features</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Pricing</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Changelog</a></li>
+              <li><a href="#features" className="hover:text-blue-400 transition-colors">Features</a></li>
+              <li><a href="#pricing" className="hover:text-blue-400 transition-colors">Pricing</a></li>
+              <li><Link href="/changelog" className="hover:text-blue-400 transition-colors">Changelog</Link></li>
               <li><a href="#" className="hover:text-blue-400 transition-colors">Download</a></li>
             </ul>
           </div>
@@ -1048,7 +1048,7 @@ function Footer() {
             <h4 className="font-bold text-white text-sm">Resources</h4>
             <ul className="space-y-3 text-sm text-zinc-500">
               <li><a href="#" className="hover:text-blue-400 transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Blog</a></li>
+              <li><Link href="/blog" className="hover:text-blue-400 transition-colors">Blog</Link></li>
               <li><a href="#" className="hover:text-blue-400 transition-colors">Community</a></li>
             </ul>
           </div>
@@ -1057,8 +1057,9 @@ function Footer() {
           <div className="space-y-6">
             <h4 className="font-bold text-white text-sm">Legal</h4>
             <ul className="space-y-3 text-sm text-zinc-500">
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Privacy</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Terms</a></li>
+              <li><Link href="/privacy" className="hover:text-blue-400 transition-colors">Privacy</Link></li>
+              <li><Link href="/terms" className="hover:text-blue-400 transition-colors">Terms</Link></li>
+              <li><Link href="/contact" className="hover:text-blue-400 transition-colors">Contact</Link></li>
             </ul>
           </div>
 
