@@ -41,13 +41,13 @@ export default function Navbar() {
                 {/* Actions */}
                 <div className="flex items-center gap-4">
                     <a
-                        href="https://github.com"
+                        href="https://github.com/Praveenkumar02023/schema"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900/50 hover:bg-zinc-800 text-xs font-medium text-zinc-300 transition-colors"
+                        className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-700 bg-zinc-900/50 hover:bg-zinc-800 text-sm font-medium text-zinc-300 transition-colors"
                     >
-                        <Github size={14} />
-                        <span>GitHub</span>
+                        <Github size={16} />
+                        <span>Star on GitHub</span>
                     </a>
                     <Link
                         href="/signin"

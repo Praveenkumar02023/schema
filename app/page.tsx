@@ -1020,9 +1020,7 @@ function Footer() {
 
             {/* Social Icons */}
             <div className="flex gap-6 text-zinc-500">
-              <a href="#" className="hover:text-white transition-colors"><TwitterIcon size={18} /></a>
-              <a href="#" className="hover:text-white transition-colors"><GithubIcon size={18} /></a>
-              <a href="#" className="hover:text-white transition-colors"><MessageSquare size={18} /></a>
+              <a href="https://github.com/Praveenkumar02023/schema" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><GithubIcon size={20} /></a>
             </div>
 
             {/* Status */}
