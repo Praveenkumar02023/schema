@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import { useState, useEffect } from 'react';
 import { companies } from '@/components/CompanyLogos';
+import { databaseLogos } from '@/components/DatabaseLogos';
 
 export default function Home() {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
@@ -799,6 +800,48 @@ export default function Home() {
               ))}
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* Database Integration Section */}
+      <section className="py-32 bg-zinc-950 relative border-t border-zinc-900 overflow-hidden">
+
+        {/* Ambient Background Effects */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay"></div>
+
+        <div className="max-w-5xl mx-auto px-6 relative z-10 text-center">
+          <div className="mb-20">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight">
+              Powering your data layer
+            </h2>
+            <p className="text-zinc-400 max-w-xl mx-auto text-lg leading-relaxed">
+              Connect seamlessly with the most robust relational databases in the industry.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap justify-center items-center gap-16 md:gap-24">
+            {databaseLogos.map((db, i) => (
+              <div
+                key={i}
+                className="group relative flex flex-col items-center justify-center p-4 transition-all duration-500 hover:scale-110"
+              >
+                {/* Space Glow Effect */}
+                <div
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-[60px] opacity-20 group-hover:opacity-50 transition-opacity duration-500"
+                  style={{ backgroundColor: db.color }}
+                />
+
+                <div className={`relative w-24 h-24 md:w-32 md:h-32 drop-shadow-2xl animate-float-${i % 2 === 0 ? 'slow' : 'fast'} ${db.name === 'MySQL' ? 'brightness-0 invert' : ''}`}>
+                  <db.logo />
+                </div>
+
+                <span className="mt-6 text-lg font-medium text-zinc-500 group-hover:text-zinc-200 transition-colors duration-300 tracking-wide">
+                  {db.name}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
