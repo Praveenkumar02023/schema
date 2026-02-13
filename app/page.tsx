@@ -1043,36 +1043,22 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Resources */}
+          {/* Column 3: Resources - Essential */}
           <div className="space-y-6">
             <h4 className="font-bold text-white text-sm">Resources</h4>
             <ul className="space-y-3 text-sm text-zinc-500">
               <li><a href="#" className="hover:text-blue-400 transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">API Reference</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Community</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Guides</a></li>
-            </ul>
-          </div>
-
-          {/* Column 4: Company */}
-          <div className="space-y-6">
-            <h4 className="font-bold text-white text-sm">Company</h4>
-            <ul className="space-y-3 text-sm text-zinc-500">
-              <li><a href="#" className="hover:text-blue-400 transition-colors">About</a></li>
               <li><a href="#" className="hover:text-blue-400 transition-colors">Blog</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Contact</a></li>
+              <li><a href="#" className="hover:text-blue-400 transition-colors">Community</a></li>
             </ul>
           </div>
 
-          {/* Column 5: Legal */}
+          {/* Column 4: Legal - Essential */}
           <div className="space-y-6">
             <h4 className="font-bold text-white text-sm">Legal</h4>
             <ul className="space-y-3 text-sm text-zinc-500">
               <li><a href="#" className="hover:text-blue-400 transition-colors">Privacy</a></li>
               <li><a href="#" className="hover:text-blue-400 transition-colors">Terms</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Security</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Cookies</a></li>
             </ul>
           </div>
 

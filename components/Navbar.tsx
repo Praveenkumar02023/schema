@@ -30,22 +30,12 @@ export default function Navbar() {
                     <Link href="#features" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
                         Features
                     </Link>
-                    <Link href="#examples" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
-                        Examples
-                    </Link>
-                    <Link href="/editor" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
-                        App Editor
-                    </Link>
                     <Link href="#pricing" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
                         Pricing
                     </Link>
-                    <div className="relative group">
-                        <button className="flex items-center gap-1 text-sm font-medium text-zinc-400 hover:text-white transition-colors">
-                            Resources
-                            <ChevronDown size={14} />
-                        </button>
-                        {/* Dropdown would go here */}
-                    </div>
+                    <Link href="/docs" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
+                        Docs
+                    </Link>
                 </div>
 
                 {/* Actions */}
