@@ -1,4 +1,4 @@
-export type ColumnType = 'INT' | 'VARCHAR' | 'BOOLEAN' | 'DATE' | 'JSON' | 'TEXT' | 'UUID' | 'TIMESTAMP';
+export type ColumnType = 'INT' | 'BIGINT' | 'VARCHAR' | 'BOOLEAN' | 'DATE' | 'JSON' | 'TEXT' | 'UUID' | 'TIMESTAMP' | 'SERIAL' | 'BIGSERIAL' | 'NUMERIC' | 'DECIMAL' | 'FLOAT' | 'REAL' | 'MONEY' | 'CHAR' | 'TEXT' | 'BLOB' | 'BYTEA' | 'JSONB' | 'XML' | 'INTERVAL' | 'MACADDR' | 'INET' | 'CIDR' | 'MACADDR8' | 'POINT' | 'LINE' | 'LSEG' | 'BOX' | 'PATH' | 'POLYGON' | 'CIRCLE';
 
 export interface Column {
   id: string;
