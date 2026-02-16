@@ -81,50 +81,72 @@ export default function CollaboratorList({ projectId, currentUserRole }: Collabo
     if (currentUserRole !== 'OWNER') return null;
 
     return (
-        <div className="mt-6">
-            <h3 className="text-sm font-medium text-zinc-400 mb-3 flex items-center gap-2">
-                <UserPlus size={16} />
-                Collaborators
-            </h3>
+        <div className="mt-2">
 
             {loading ? (
-                <div className="text-xs text-zinc-500">Loading collaborators...</div>
-            ) : collaborators.length === 0 ? (
-                <div className="text-xs text-zinc-500 italic">No collaborators yet. Share a link to invite people.</div>
-            ) : (
+                // Skeleton Loader
                 <div className="space-y-3">
+                    {[1, 2].map((i) => (
+                        <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-zinc-800/50 bg-zinc-900/30">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-zinc-800 animate-pulse" />
+                                <div className="space-y-1.5">
+                                    <div className="w-24 h-3 bg-zinc-800 rounded animate-pulse" />
+                                    <div className="w-32 h-2.5 bg-zinc-800/50 rounded animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="w-16 h-6 bg-zinc-800 rounded animate-pulse" />
+                        </div>
+                    ))}
+                </div>
+            ) : collaborators.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-zinc-500">
+                    <UserPlus size={48} className="opacity-20 mb-3" />
+                    <p className="text-sm">No collaborators yet</p>
+                    <p className="text-xs text-zinc-600">Invite people via link first</p>
+                </div>
+            ) : (
+                <div className="space-y-2">
                     {collaborators.map(collaborator => (
-                        <div key={collaborator.id} className="flex items-center justify-between bg-zinc-900/50 p-3 rounded border border-zinc-800/50">
+                        <div key={collaborator.id} className="group flex items-center justify-between bg-[#09090b] p-3 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-all hover:shadow-lg">
                             <div className="flex items-center gap-3">
                                 {collaborator.user.image ? (
-                                    <img src={collaborator.user.image} alt="User" className="w-8 h-8 rounded-full" />
+                                    <img src={collaborator.user.image} alt="User" className="w-9 h-9 rounded-full border border-zinc-700" />
                                 ) : (
-                                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                                        <User size={14} />
+                                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-600 flex items-center justify-center text-zinc-300 font-bold text-xs ring-1 ring-zinc-500/30">
+                                        {collaborator.user.name?.[0]?.toUpperCase() || <User size={14} />}
                                     </div>
                                 )}
                                 <div>
-                                    <p className="text-sm text-zinc-200">{collaborator.user.name || 'Unknown User'}</p>
+                                    <p className="text-sm font-medium text-zinc-200">
+                                        {collaborator.user.name || 'Unknown User'}
+                                        {collaborator.user.email === 'you' && <span className="ml-2 text-[10px] text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">You</span>}
+                                    </p>
                                     <p className="text-xs text-zinc-500">{collaborator.user.email}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <select
-                                    value={collaborator.role}
-                                    onChange={(e) => updateRole(collaborator.id, e.target.value as "VIEWER" | "EDITOR")}
-                                    className="bg-zinc-950 border border-zinc-800 text-xs text-zinc-300 rounded px-2 py-1 focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="VIEWER">Viewer</option>
-                                    <option value="EDITOR">Editor</option>
-                                </select>
+                                <div className="relative">
+                                    <select
+                                        value={collaborator.role}
+                                        onChange={(e) => updateRole(collaborator.id, e.target.value as "VIEWER" | "EDITOR")}
+                                        className="appearance-none bg-zinc-900 border border-zinc-700 text-xs font-medium text-zinc-300 rounded-md py-1.5 pl-3 pr-8 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer hover:bg-zinc-800"
+                                    >
+                                        <option value="VIEWER">Viewer</option>
+                                        <option value="EDITOR">Editor</option>
+                                    </select>
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-500">
+                                        <svg className="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+                                    </div>
+                                </div>
 
                                 <button
                                     onClick={() => removeCollaborator(collaborator.id)}
-                                    className="text-zinc-500 hover:text-red-500 transition-colors"
+                                    className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
                                     title="Remove Collaborator"
                                 >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={15} />
                                 </button>
                             </div>
                         </div>

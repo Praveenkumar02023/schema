@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Plus, Trash2, X, RefreshCw, Eye, Edit2, UserPlus, Link as LinkIcon, Users } from "lucide-react";
+import { Copy, Plus, Trash2, X, RefreshCw, Eye, Edit2, UserPlus, Link as LinkIcon, Users, Loader2 } from "lucide-react";
 import { useSchemaStore } from "@/store/useSchemaStore";
 import CollaboratorList from "./CollaboratorList";
 import { clsx } from "clsx";
@@ -63,35 +63,39 @@ export default function ShareModal({ isOpen, onClose, projectId, currentUserRole
         const origin = window.location.origin;
         const url = `${origin}/share/${token}`;
         navigator.clipboard.writeText(url);
-        alert(`Copied ${type} link to clipboard!`);
+        // alert(`Copied ${type} link to clipboard!`); // Removed alert for better UX, maybe add a toast later?
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="w-full max-w-md rounded-lg bg-zinc-900 border border-zinc-800 shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="w-full max-w-lg rounded-2xl bg-[#09090b] border border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ring-1 ring-white/10">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 pb-2">
-                    <h2 className="text-xl font-semibold text-white">Share Project</h2>
-                    <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
+                <div className="flex items-center justify-between p-6 pb-4 border-b border-zinc-800/50 bg-zinc-900/50">
+                    <div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">Share Project</h2>
+                        <p className="text-xs text-zinc-400 mt-1">Manage access and collaboration</p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="text-zinc-400 hover:text-white transition-colors p-2 hover:bg-zinc-800 rounded-full active:scale-95"
+                    >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex px-6 border-b border-zinc-800">
+                <div className="flex px-6 border-b border-zinc-800 bg-zinc-900/30">
                     <button
                         onClick={() => setActiveTab('invite')}
                         className={clsx(
-                            "pb-3 text-sm font-medium transition-colors relative mr-6",
+                            "pb-3 pt-4 text-sm font-medium transition-all relative mr-6 flex items-center gap-2",
                             activeTab === 'invite' ? "text-blue-500" : "text-zinc-400 hover:text-zinc-200"
                         )}
                     >
-                        <div className="flex items-center gap-2">
-                            <LinkIcon size={14} /> Invite
-                        </div>
+                        <LinkIcon size={16} /> Invite via Link
                         {activeTab === 'invite' && (
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-t-full" />
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-t-full shadow-[0_0_12px_rgba(59,130,246,0.5)]" />
                         )}
                     </button>
 
@@ -99,118 +103,141 @@ export default function ShareModal({ isOpen, onClose, projectId, currentUserRole
                         <button
                             onClick={() => setActiveTab('members')}
                             className={clsx(
-                                "pb-3 text-sm font-medium transition-colors relative",
+                                "pb-3 pt-4 text-sm font-medium transition-all relative flex items-center gap-2",
                                 activeTab === 'members' ? "text-blue-500" : "text-zinc-400 hover:text-zinc-200"
                             )}
                         >
-                            <div className="flex items-center gap-2">
-                                <Users size={14} /> Members
-                            </div>
+                            <Users size={16} /> Manage Members
                             {activeTab === 'members' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-t-full" />
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-t-full shadow-[0_0_12px_rgba(59,130,246,0.5)]" />
                             )}
                         </button>
                     )}
                 </div>
 
-                <div className="p-6 overflow-y-auto">
+                <div className="p-6 overflow-y-auto bg-[#09090b]">
                     {activeTab === 'invite' ? (
                         <div className="space-y-6">
-                            {/* View Link Section */}
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-zinc-300">
-                                        <Eye size={16} />
-                                        <span className="text-sm font-medium">View Only Link</span>
+
+                            {/* View Link Card */}
+                            <div className="group rounded-xl border border-zinc-800 bg-zinc-900/20 p-5 transition-all hover:border-zinc-700/80 hover:bg-zinc-900/40">
+                                <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 shrink-0 group-hover:scale-105 transition-transform">
+                                            <Eye size={20} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-semibold text-zinc-100">Public View Link</h3>
+                                            <p className="text-xs text-zinc-500 mt-1 leading-relaxed max-w-[260px]">
+                                                Anyone with the link can <span className="text-zinc-300 font-medium">view</span> the project structure.
+                                            </p>
+                                        </div>
                                     </div>
-                                    {viewToken && currentUserRole === 'OWNER' && (
+
+                                    {/* Toggle */}
+                                    {currentUserRole === 'OWNER' && (
                                         <button
-                                            onClick={() => revokeLink('view')}
-                                            className="text-xs text-red-500 hover:text-red-400"
+                                            onClick={() => viewToken ? revokeLink('view') : generateLink('view')}
                                             disabled={loading}
+                                            className={clsx(
+                                                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-900",
+                                                viewToken ? "bg-blue-600" : "bg-zinc-700",
+                                                loading && "opacity-50 cursor-not-allowed"
+                                            )}
                                         >
-                                            Revoke
+                                            <span className="sr-only">Enable View Link</span>
+                                            <span
+                                                className={clsx(
+                                                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform flex items-center justify-center",
+                                                    viewToken ? "translate-x-6" : "translate-x-1"
+                                                )}
+                                            >
+                                                {loading && <Loader2 size={10} className="animate-spin text-zinc-900" />}
+                                            </span>
                                         </button>
                                     )}
                                 </div>
 
-                                {viewToken ? (
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            readOnly
-                                            value={`${window.location.origin}/share/${viewToken}`}
-                                            className="flex-1 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-blue-500"
-                                        />
-                                        <button
-                                            onClick={() => copyToClipboard(viewToken, 'view')}
-                                            className="p-2 bg-blue-600 hover:bg-blue-500 rounded text-white transition-colors"
-                                        >
-                                            <Copy size={16} />
-                                        </button>
+                                {/* Link Display */}
+                                {viewToken && (
+                                    <div className="mt-4 pl-[52px] animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <div className="flex items-center gap-2 p-1.5 bg-zinc-950/50 border border-zinc-800 rounded-lg group-hover:border-zinc-700/50 transition-colors">
+                                            <div className="flex-1 px-3 py-1.5 text-xs text-zinc-400 font-mono truncate select-all">
+                                                {`${window.location.origin}/share/${viewToken}`}
+                                            </div>
+                                            <button
+                                                onClick={() => copyToClipboard(viewToken, 'view')}
+                                                className="p-2 bg-zinc-800 hover:bg-blue-600 hover:text-white text-zinc-400 rounded-md transition-all active:scale-95 shadow-sm"
+                                                title="Copy Link"
+                                            >
+                                                <Copy size={13} />
+                                            </button>
+                                        </div>
                                     </div>
-                                ) : (
-                                    <button
-                                        onClick={() => generateLink('view')}
-                                        disabled={loading || currentUserRole !== 'OWNER'}
-                                        className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded text-sm transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <Plus size={16} />
-                                        Generate View Link
-                                    </button>
                                 )}
                             </div>
 
-                            {/* Edit Link Section */}
+                            {/* Edit Link Card */}
                             {currentUserRole === 'OWNER' && (
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-zinc-300">
-                                            <Edit2 size={16} />
-                                            <span className="text-sm font-medium">Edit Link</span>
+                                <div className="group rounded-xl border border-zinc-800 bg-zinc-900/20 p-5 transition-all hover:border-zinc-700/80 hover:bg-zinc-900/40">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <div className="flex items-start gap-4">
+                                            <div className="p-2.5 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20 shrink-0 group-hover:scale-105 transition-transform">
+                                                <Edit2 size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-semibold text-zinc-100">Contributor Invite Link</h3>
+                                                <p className="text-xs text-zinc-500 mt-1 leading-relaxed max-w-[260px]">
+                                                    Anyone with the link can <span className="text-zinc-300 font-medium">edit</span> the project.
+                                                </p>
+                                            </div>
                                         </div>
-                                        {editToken && (
-                                            <button
-                                                onClick={() => revokeLink('edit')}
-                                                className="text-xs text-red-500 hover:text-red-400"
-                                                disabled={loading}
+
+                                        {/* Toggle */}
+                                        <button
+                                            onClick={() => editToken ? revokeLink('edit') : generateLink('edit')}
+                                            disabled={loading}
+                                            className={clsx(
+                                                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-zinc-900",
+                                                editToken ? "bg-purple-600" : "bg-zinc-700",
+                                                loading && "opacity-50 cursor-not-allowed"
+                                            )}
+                                        >
+                                            <span className="sr-only">Enable Edit Link</span>
+                                            <span
+                                                className={clsx(
+                                                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform flex items-center justify-center",
+                                                    editToken ? "translate-x-6" : "translate-x-1"
+                                                )}
                                             >
-                                                Revoke
-                                            </button>
-                                        )}
+                                                {loading && <Loader2 size={10} className="animate-spin text-zinc-900" />}
+                                            </span>
+                                        </button>
                                     </div>
 
-                                    {editToken ? (
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                readOnly
-                                                value={`${window.location.origin}/share/${editToken}`}
-                                                className="flex-1 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-blue-500"
-                                            />
-                                            <button
-                                                onClick={() => copyToClipboard(editToken, 'edit')}
-                                                className="p-2 bg-blue-600 hover:bg-blue-500 rounded text-white transition-colors"
-                                            >
-                                                <Copy size={16} />
-                                            </button>
+                                    {/* Link Display */}
+                                    {editToken && (
+                                        <div className="mt-4 pl-[52px] animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <div className="flex items-center gap-2 p-1.5 bg-zinc-950/50 border border-zinc-800 rounded-lg group-hover:border-zinc-700/50 transition-colors">
+                                                <div className="flex-1 px-3 py-1.5 text-xs text-zinc-400 font-mono truncate select-all">
+                                                    {`${window.location.origin}/share/${editToken}`}
+                                                </div>
+                                                <button
+                                                    onClick={() => copyToClipboard(editToken, 'edit')}
+                                                    className="p-2 bg-zinc-800 hover:bg-purple-600 hover:text-white text-zinc-400 rounded-md transition-all active:scale-95 shadow-sm"
+                                                    title="Copy Link"
+                                                >
+                                                    <Copy size={13} />
+                                                </button>
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <button
-                                            onClick={() => generateLink('edit')}
-                                            disabled={loading}
-                                            className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded text-sm transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <Plus size={16} />
-                                            Generate Edit Link
-                                        </button>
                                     )}
                                 </div>
                             )}
 
-                            <div className="mt-4 pt-4 border-t border-zinc-800">
-                                <p className="text-xs text-zinc-500 text-center">
-                                    Anyone with the link can access the project.
-                                    View links allow read-only access.
-                                    Edit links allow full modification rights.
+                            <div className="mt-4 pt-4 border-t border-zinc-800/50">
+                                <p className="text-[10px] text-zinc-600 text-center font-medium">
+                                    Links do not expire unless manually revoked.
                                 </p>
                             </div>
                         </div>

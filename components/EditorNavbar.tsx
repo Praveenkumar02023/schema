@@ -241,13 +241,7 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
                     </div>
                 )}
 
-                <button
-                    onClick={() => setIsShareOpen(true)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-100 bg-blue-600 hover:bg-blue-500 rounded-md transition-colors shadow-lg shadow-blue-500/20"
-                >
-                    <Share2 size={14} />
-                    Share
-                </button>
+
 
                 <button
                     onClick={handleImportClick}
@@ -294,11 +288,17 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
             </div>
 
             {/* Right: Actions & Profile */}
-            <div className="flex items-center gap-3">
-
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={() => setIsShareOpen(true)}
+                    className="flex items-center gap-2 px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-full transition-all shadow-lg shadow-blue-500/20 border border-blue-400/20 hover:scale-105 active:scale-95"
+                >
+                    <Share2 size={14} />
+                    Share
+                </button>
 
                 {/* Vertical Separator */}
-                <div className="h-4 w-px bg-zinc-800" />
+                <div className="h-6 w-px bg-zinc-800" />
 
                 {/* Profile Dropdown */}
                 <div className="relative">
