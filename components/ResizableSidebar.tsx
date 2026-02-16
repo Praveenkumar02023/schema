@@ -47,6 +47,7 @@ export default function ResizableSidebar() {
   const addTable = useSchemaStore((state) => state.addTable);
   const setSelectedTableId = useSchemaStore((state) => state.setSelectedTableId);
   const selectedTableId = useSchemaStore((state) => state.selectedTableId);
+  const currentUserRole = useSchemaStore((state) => state.currentUserRole);
 
   // --- Resizing Logic ---
   const startResizing = () => setIsResizing(true);
@@ -233,17 +234,19 @@ export default function ResizableSidebar() {
       </div>
 
       {/* --- Footer Action --- */}
-      <div className="p-4 border-t border-[#27272a]/50 bg-[#09090b] relative z-20">
-        <button
-          onClick={handleAddTable}
-          className="group relative flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-lg transition-all duration-200 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] hover:shadow-[0_6px_24px_-4px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      {currentUserRole !== 'VIEWER' && (
+        <div className="p-4 border-t border-[#27272a]/50 bg-[#09090b] relative z-20">
+          <button
+            onClick={handleAddTable}
+            className="group relative flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-lg transition-all duration-200 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] hover:shadow-[0_6px_24px_-4px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-          <Plus size={16} strokeWidth={3} className="relative z-20 transition-transform group-hover:rotate-90 duration-300" />
-          <span className="relative z-20">New Table</span>
-        </button>
-      </div>
+            <Plus size={16} strokeWidth={3} className="relative z-20 transition-transform group-hover:rotate-90 duration-300" />
+            <span className="relative z-20">New Table</span>
+          </button>
+        </div>
+      )}
 
       {/* --- Resize Handle --- */}
       <div

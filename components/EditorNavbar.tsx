@@ -220,24 +220,26 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
             <div className="hidden md:flex items-center gap-1">
                 {/* Save Button */}
                 {/* Auto Save Status */}
-                <div className="flex items-center justify-end min-w-[100px] px-3">
-                    {savingStatus === 'saving' ? (
-                        <div className="flex items-center gap-2 text-blue-400 animate-pulse bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
-                            <Cloud size={12} className="animate-bounce" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Saving...</span>
-                        </div>
-                    ) : savingStatus === 'error' ? (
-                        <div className="flex items-center gap-2 text-red-400 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Error</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2 text-zinc-500 hover:text-emerald-500 transition-colors cursor-help px-2 py-1"
-                            title={`Last saved: ${lastSaved?.toLocaleTimeString()}`}>
-                            <CheckCircle2 size={13} />
-                            <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline-block">Saved</span>
-                        </div>
-                    )}
-                </div>
+                {currentRole !== 'VIEWER' && (
+                    <div className="flex items-center justify-end min-w-[100px] px-3">
+                        {savingStatus === 'saving' ? (
+                            <div className="flex items-center gap-2 text-blue-400 animate-pulse bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
+                                <Cloud size={12} className="animate-bounce" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Saving...</span>
+                            </div>
+                        ) : savingStatus === 'error' ? (
+                            <div className="flex items-center gap-2 text-red-400 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Error</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 text-zinc-500 hover:text-emerald-500 transition-colors cursor-help px-2 py-1"
+                                title={`Last saved: ${lastSaved?.toLocaleTimeString()}`}>
+                                <CheckCircle2 size={13} />
+                                <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline-block">Saved</span>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <button
                     onClick={() => setIsShareOpen(true)}

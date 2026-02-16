@@ -109,6 +109,9 @@ export default function TableInspector() {
     setSelectedTableId
   } = useSchemaStore();
 
+  const currentUserRole = useSchemaStore((state) => state.currentUserRole);
+  const isReadOnly = currentUserRole === 'VIEWER';
+
   const [width, setWidth] = useState(DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -211,24 +214,32 @@ export default function TableInspector() {
       {/* --- Header --- */}
       <div className="h-14 flex items-center justify-between px-5 border-b border-zinc-800 bg-[#09090b] shrink-0">
         <div className="flex-1 mr-4">
-          <input
-            type="text"
-            value={renderTable.name}
-            onChange={(e) => selectedTable && updateTableName(selectedTable.id, e.target.value)}
-            className="bg-transparent text-lg font-bold text-zinc-100 placeholder-zinc-700 focus:outline-none focus:ring-0 border-none p-0 w-full truncate"
-            placeholder="Table Name"
-          />
+          {isReadOnly ? (
+            <div className="text-lg font-bold text-zinc-100 p-0 w-full truncate">{renderTable.name}</div>
+          ) : (
+            <input
+              type="text"
+              value={renderTable.name}
+              onChange={(e) => selectedTable && updateTableName(selectedTable.id, e.target.value)}
+              className="bg-transparent text-lg font-bold text-zinc-100 placeholder-zinc-700 focus:outline-none focus:ring-0 border-none p-0 w-full truncate"
+              placeholder="Table Name"
+            />
+          )}
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleDeleteTable}
-            className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
-            title="Delete Table"
-          >
-            <Trash2 size={18} />
-          </button>
-          <div className="w-px h-4 bg-zinc-800 mx-1" />
+          {!isReadOnly && (
+            <>
+              <button
+                onClick={handleDeleteTable}
+                className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+                title="Delete Table"
+              >
+                <Trash2 size={18} />
+              </button>
+              <div className="w-px h-4 bg-zinc-800 mx-1" />
+            </>
+          )}
           <button
             onClick={handleClose}
             className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-md transition-all"
@@ -264,12 +275,14 @@ export default function TableInspector() {
               {/* PK Toggle */}
               <div className="flex justify-center">
                 <button
-                  onClick={() => selectedTable && updateColumn(selectedTable.id, col.id, { isPrimaryKey: !col.isPrimaryKey })}
+                  onClick={() => !isReadOnly && selectedTable && updateColumn(selectedTable.id, col.id, { isPrimaryKey: !col.isPrimaryKey })}
+                  disabled={isReadOnly}
                   className={cn(
                     "p-1.5 rounded transition-all",
                     col.isPrimaryKey
                       ? "text-amber-400 bg-amber-400/10"
-                      : "text-zinc-700 opacity-20 group-hover:opacity-100 hover:text-zinc-400 hover:bg-zinc-800"
+                      : "text-zinc-700 opacity-20 group-hover:opacity-100 hover:text-zinc-400 hover:bg-zinc-800",
+                    isReadOnly && "cursor-default opacity-50 hover:bg-transparent"
                   )}
                   title="Primary Key"
                 >
@@ -279,37 +292,47 @@ export default function TableInspector() {
 
               {/* Name Input */}
               <div className="relative group/input">
-                <input
-                  autoFocus={newColId === col.id}
-                  type="text"
-                  value={col.name}
-                  onChange={(e) => selectedTable && updateColumn(selectedTable.id, col.id, { name: e.target.value })}
-                  onBlur={() => setNewColId(null)}
-                  className="w-full bg-zinc-900/50 border border-zinc-800 rounded px-2 py-1.5 text-xs font-medium text-zinc-300 focus:text-white focus:bg-zinc-900 focus:border-blue-500/50 focus:outline-none transition-all placeholder:text-zinc-700"
-                  placeholder="col_name"
-                />
+                {isReadOnly ? (
+                  <div className="w-full px-2 py-1.5 text-xs font-medium text-zinc-300">{col.name}</div>
+                ) : (
+                  <input
+                    autoFocus={newColId === col.id}
+                    type="text"
+                    value={col.name}
+                    onChange={(e) => selectedTable && updateColumn(selectedTable.id, col.id, { name: e.target.value })}
+                    onBlur={() => setNewColId(null)}
+                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded px-2 py-1.5 text-xs font-medium text-zinc-300 focus:text-white focus:bg-zinc-900 focus:border-blue-500/50 focus:outline-none transition-all placeholder:text-zinc-700"
+                    placeholder="col_name"
+                  />
+                )}
               </div>
 
               {/* Custom Type Selector */}
               <div className="relative w-full">
-                <TypeSelector
-                  value={col.type}
-                  isOpen={activeDropdownId === col.id}
-                  onToggle={() => setActiveDropdownId(activeDropdownId === col.id ? null : col.id)}
-                  onClose={() => setActiveDropdownId(null)}
-                  onChange={(val) => selectedTable && updateColumn(selectedTable.id, col.id, { type: val as ColumnType })}
-                />
+                {isReadOnly ? (
+                  <div className="px-2 py-1.5 text-[10px] font-mono text-blue-400/80">{col.type}</div>
+                ) : (
+                  <TypeSelector
+                    value={col.type}
+                    isOpen={activeDropdownId === col.id}
+                    onToggle={() => setActiveDropdownId(activeDropdownId === col.id ? null : col.id)}
+                    onClose={() => setActiveDropdownId(null)}
+                    onChange={(val) => selectedTable && updateColumn(selectedTable.id, col.id, { type: val as ColumnType })}
+                  />
+                )}
               </div>
 
               {/* Nullable Toggle */}
               <div className="flex justify-center">
                 <button
-                  onClick={() => selectedTable && updateColumn(selectedTable.id, col.id, { isNullable: !col.isNullable })}
+                  onClick={() => !isReadOnly && selectedTable && updateColumn(selectedTable.id, col.id, { isNullable: !col.isNullable })}
+                  disabled={isReadOnly}
                   className={cn(
                     "w-8 py-0.5 rounded text-[9px] font-bold transition-all border",
                     !col.isNullable
                       ? "bg-red-500/10 border-red-500/20 text-red-500"
-                      : "bg-transparent border-transparent text-zinc-600 hover:text-zinc-400"
+                      : "bg-transparent border-transparent text-zinc-600 hover:text-zinc-400",
+                    isReadOnly && "cursor-default"
                   )}
                   title="Toggle Required"
                 >
@@ -319,12 +342,14 @@ export default function TableInspector() {
 
               {/* Delete Action */}
               <div className="flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => selectedTable && deleteColumn(selectedTable.id, col.id)}
-                  className="text-zinc-600 hover:text-red-400 p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                >
-                  <Trash2 size={13} />
-                </button>
+                {!isReadOnly && (
+                  <button
+                    onClick={() => selectedTable && deleteColumn(selectedTable.id, col.id)}
+                    className="text-zinc-600 hover:text-red-400 p-1.5 rounded hover:bg-red-500/10 transition-colors"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -338,15 +363,17 @@ export default function TableInspector() {
       </div>
 
       {/* Footer Add Button */}
-      <div className="p-4 border-t border-zinc-800 bg-[#09090b] shrink-0">
-        <button
-          onClick={handleAddColumn}
-          className="w-full py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 active:translate-y-0.5 shadow-lg shadow-zinc-950/20"
-        >
-          <Plus size={14} strokeWidth={3} />
-          Add Column
-        </button>
-      </div>
+      {!isReadOnly && (
+        <div className="p-4 border-t border-zinc-800 bg-[#09090b] shrink-0">
+          <button
+            onClick={handleAddColumn}
+            className="w-full py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 active:translate-y-0.5 shadow-lg shadow-zinc-950/20"
+          >
+            <Plus size={14} strokeWidth={3} />
+            Add Column
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

@@ -192,6 +192,7 @@ export default function SchemaCanvas() {
   const undo = useSchemaStore((state) => state.undo);
   const redo = useSchemaStore((state) => state.redo);
   const pushToHistory = useSchemaStore((state) => state.pushToHistory);
+  const currentUserRole = useSchemaStore((state) => state.currentUserRole);
 
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 
@@ -201,9 +202,9 @@ export default function SchemaCanvas() {
     position: table.position,
     data: { table },
     type: 'table',
-    draggable: true,
+    draggable: currentUserRole !== 'VIEWER',
     zIndex: 10,
-  })), [tables]); // Added tables dep
+  })), [tables, currentUserRole]); // Added tables dep
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 
@@ -214,10 +215,10 @@ export default function SchemaCanvas() {
       position: table.position,
       data: { table },
       type: 'table',
-      draggable: true,
+      draggable: currentUserRole !== 'VIEWER',
       zIndex: 10,
     })));
-  }, [tables, setNodes]);
+  }, [tables, setNodes, currentUserRole]);
 
   const handleNodesChange: OnNodesChange = useCallback(
     (changes) => {
@@ -344,6 +345,7 @@ export default function SchemaCanvas() {
   }, [relations, selectedEdgeId, nodes]);
 
   const onConnect = useCallback((params: Connection) => {
+    if (currentUserRole === 'VIEWER') return;
     if (!params.source || !params.target || !params.sourceHandle || !params.targetHandle) return;
 
     // Handle Loose connection mode where we might connect source-source, target-target, etc.
@@ -369,6 +371,8 @@ export default function SchemaCanvas() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (currentUserRole === 'VIEWER') return;
+
       // Undo/Redo
       if ((event.metaKey || event.ctrlKey) && event.key === 'z') {
         if (event.shiftKey) {
@@ -405,7 +409,7 @@ export default function SchemaCanvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedEdgeId, selectedTableId, deleteRelation, deleteTable, undo, redo, pushToHistory, setSelectedTableId]);
+  }, [selectedEdgeId, selectedTableId, deleteRelation, deleteTable, undo, redo, pushToHistory, setSelectedTableId, currentUserRole]);
 
   const onNodeClick = useCallback((_: any, node: Node) => {
     setSelectedTableId(node.id);

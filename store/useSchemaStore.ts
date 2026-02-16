@@ -21,7 +21,9 @@ interface SchemaStore {
   // Project Association
   currentProjectId: string | null;
   currentProjectName: string;
+  currentUserRole: 'OWNER' | 'EDITOR' | 'VIEWER' | null;
   setCurrentProject: (id: string, name: string) => void;
+  setProjectRole: (role: 'OWNER' | 'EDITOR' | 'VIEWER') => void;
   updateProjectName: (name: string) => void;
   loadProjectSchema: (schema: { tables: Table[], relations: Relation[] }) => void;
 
@@ -33,7 +35,7 @@ interface SchemaStore {
   pushToHistory: () => void;
 }
 
-export const useSchemaStore = create<SchemaStore>((set) => ({
+export const useSchemaStore = create<SchemaStore>((set, get) => ({
 
   tables: [],
   relations: [],
@@ -42,45 +44,62 @@ export const useSchemaStore = create<SchemaStore>((set) => ({
   selectedTableId: null,
   currentProjectId: null,
   currentProjectName: "Untitled Project",
+  currentUserRole: null,
 
   setCurrentProject: (id: string, name: string) => set({ currentProjectId: id, currentProjectName: name }),
-  updateProjectName: (name: string) => set({ currentProjectName: name }),
+  setProjectRole: (role) => set({ currentUserRole: role }),
+  updateProjectName: (name: string) => {
+    if (get().currentUserRole === 'VIEWER') return;
+    set({ currentProjectName: name });
+  },
 
   loadProjectSchema: (schema: { tables: Table[], relations: Relation[] }) => set({ tables: schema.tables, relations: schema.relations }),
 
-  addTable: (table) => set((state) => ({ tables: [...state.tables, table] })),
+  addTable: (table) => {
+    if (get().currentUserRole === 'VIEWER') return;
+    set((state) => ({ tables: [...state.tables, table] }));
+  },
 
-  updateTablePosition: (id, position) =>
+  updateTablePosition: (id, position) => {
+    if (get().currentUserRole === 'VIEWER') return;
     set((state) => ({
       tables: state.tables.map((t) =>
         t.id === id ? { ...t, position } : t
       ),
-    })),
+    }));
+  },
 
-  updateTableName: (id, name) =>
+  updateTableName: (id, name) => {
+    if (get().currentUserRole === 'VIEWER') return;
     set((state) => ({
       tables: state.tables.map((t) => (t.id === id ? { ...t, name } : t)),
-    })),
+    }));
+  },
 
-  deleteTable: (id) =>
+  deleteTable: (id) => {
+    if (get().currentUserRole === 'VIEWER') return;
     set((state) => ({
       tables: state.tables.filter((t) => t.id !== id),
       relations: state.relations.filter(
         (r) => r.sourceTableId !== id && r.targetTableId !== id
       ),
       selectedTableId: state.selectedTableId === id ? null : state.selectedTableId,
-    })),
+    }));
+  },
 
-  addColumn: (tableId, column) =>
+  addColumn: (tableId, column) => {
+    if (get().currentUserRole === 'VIEWER') return;
     set((state) => ({
       tables: state.tables.map((t) =>
         t.id === tableId
           ? { ...t, columns: [...t.columns, column] }
           : t
       ),
-    })),
+    }));
+  },
 
-  updateColumn: (tableId, columnId, updates) =>
+  updateColumn: (tableId, columnId, updates) => {
+    if (get().currentUserRole === 'VIEWER') return;
     set((state) => ({
       tables: state.tables.map((t) =>
         t.id === tableId
@@ -92,9 +111,11 @@ export const useSchemaStore = create<SchemaStore>((set) => ({
           }
           : t
       ),
-    })),
+    }));
+  },
 
-  deleteColumn: (tableId, columnId) =>
+  deleteColumn: (tableId, columnId) => {
+    if (get().currentUserRole === 'VIEWER') return;
     set((state) => ({
       tables: state.tables.map((t) =>
         t.id === tableId
@@ -105,67 +126,87 @@ export const useSchemaStore = create<SchemaStore>((set) => ({
       relations: state.relations.filter(
         (r) => r.sourceColumnId !== columnId && r.targetColumnId !== columnId
       ),
-    })),
+    }));
+  },
 
-  addRelation: (relation) => set((state) => ({ relations: [...state.relations, relation] })),
+  addRelation: (relation) => {
+    if (get().currentUserRole === 'VIEWER') return;
+    set((state) => ({ relations: [...state.relations, relation] }));
+  },
 
-  updateRelation: (relationId, type) =>
+  updateRelation: (relationId, type) => {
+    if (get().currentUserRole === 'VIEWER') return;
     set((state) => ({
       relations: state.relations.map((r) =>
         r.id === relationId ? { ...r, type } : r
       ),
-    })),
+    }));
+  },
 
-  deleteRelation: (relationId) =>
+  deleteRelation: (relationId) => {
+    if (get().currentUserRole === 'VIEWER') return;
     set((state) => ({
       relations: state.relations.filter((r) => r.id !== relationId),
-    })),
+    }));
+  },
 
   setSelectedTableId: (id) => set({ selectedTableId: id }),
 
-  setSchema: (schema: Partial<SchemaStore>) => set((state) => ({
-    tables: schema.tables || [],
-    relations: schema.relations || [],
-    history: [], // Reset history on new schema load
-    future: [],
-  })),
+  setSchema: (schema: Partial<SchemaStore>) => {
+    if (get().currentUserRole === 'VIEWER') return;
+    set((state) => ({
+      tables: schema.tables || [],
+      relations: schema.relations || [],
+      history: [], // Reset history on new schema load
+      future: [],
+    }));
+  },
 
   // --- History ---
-  pushToHistory: () => set((state) => {
-    // Limit history stack size if needed (e.g. 50)
-    const newHistory = [
-      ...state.history,
-      { tables: state.tables, relations: state.relations }
-    ].slice(-50);
-    return { history: newHistory, future: [] };
-  }),
+  pushToHistory: () => {
+    if (get().currentUserRole === 'VIEWER') return;
+    set((state) => {
+      // Limit history stack size if needed (e.g. 50)
+      const newHistory = [
+        ...state.history,
+        { tables: state.tables, relations: state.relations }
+      ].slice(-50);
+      return { history: newHistory, future: [] };
+    });
+  },
 
-  undo: () => set((state) => {
-    if (state.history.length === 0) return {};
+  undo: () => {
+    if (get().currentUserRole === 'VIEWER') return;
+    set((state) => {
+      if (state.history.length === 0) return {};
 
-    const previous = state.history[state.history.length - 1];
-    const newHistory = state.history.slice(0, -1);
+      const previous = state.history[state.history.length - 1];
+      const newHistory = state.history.slice(0, -1);
 
-    return {
-      tables: previous.tables,
-      relations: previous.relations,
-      history: newHistory,
-      future: [{ tables: state.tables, relations: state.relations }, ...state.future],
-    };
-  }),
+      return {
+        tables: previous.tables,
+        relations: previous.relations,
+        history: newHistory,
+        future: [{ tables: state.tables, relations: state.relations }, ...state.future],
+      };
+    });
+  },
 
-  redo: () => set((state) => {
-    if (state.future.length === 0) return {};
+  redo: () => {
+    if (get().currentUserRole === 'VIEWER') return;
+    set((state) => {
+      if (state.future.length === 0) return {};
 
-    const next = state.future[0];
-    const newFuture = state.future.slice(1);
+      const next = state.future[0];
+      const newFuture = state.future.slice(1);
 
-    return {
-      tables: next.tables,
-      relations: next.relations,
-      history: [...state.history, { tables: state.tables, relations: state.relations }],
-      future: newFuture,
-    };
-  }),
+      return {
+        tables: next.tables,
+        relations: next.relations,
+        history: [...state.history, { tables: state.tables, relations: state.relations }],
+        future: newFuture,
+      };
+    });
+  },
 
 }));

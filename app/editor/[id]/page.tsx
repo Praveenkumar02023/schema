@@ -11,7 +11,7 @@ import { useSchemaStore } from "@/store/useSchemaStore";
 export default function EditorPage() {
     const params = useParams();
     const projectId = params?.id as string;
-    const { loadProjectSchema, setCurrentProject } = useSchemaStore();
+    const { loadProjectSchema, setCurrentProject, setProjectRole } = useSchemaStore();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -24,6 +24,7 @@ export default function EditorPage() {
 
                         // Set basic info
                         setCurrentProject(project.id, project.name);
+                        setProjectRole(project.role || 'VIEWER');
 
                         // Load schema
                         loadProjectSchema({
