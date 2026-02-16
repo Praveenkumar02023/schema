@@ -1,5 +1,6 @@
 'use client';
 import { useSchemaStore } from '@/store/useSchemaStore';
+import ShareModal from './ShareModal';
 import { exportToJSON, generateSQL, exportToPNG } from '@/lib/exporter';
 import { useSession, signOut } from 'next-auth/react';
 import {
@@ -32,6 +33,26 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isExportOpen, setIsExportOpen] = useState(false);
+
+    // Share State
+    const [isShareOpen, setIsShareOpen] = useState(false);
+    const [currentRole, setCurrentRole] = useState<'OWNER' | 'EDITOR' | 'VIEWER'>('VIEWER');
+
+    useEffect(() => {
+        const fetchRole = async () => {
+            if (!projectId) return;
+            try {
+                const res = await fetch(`/api/projects/${projectId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setCurrentRole(data.role || 'VIEWER');
+                }
+            } catch (error) {
+                console.error('Failed to fetch project role', error);
+            }
+        };
+        fetchRole();
+    }, [projectId]);
 
     // Project Name Edit State
     const [isEditingName, setIsEditingName] = useState(false);
@@ -177,16 +198,20 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
                             onChange={(e) => setTempName(e.target.value)}
                             onBlur={handleNameSubmit}
                             onKeyDown={handleNameKeyDown}
+                            disabled={currentRole === 'VIEWER'}
                             className="bg-zinc-900 border border-blue-500/50 text-white text-sm font-medium px-2 py-0.5 rounded outline-none w-[200px]"
                         />
                     ) : (
                         <div
-                            onClick={handleNameClick}
-                            className="text-sm font-medium text-zinc-300 hover:text-white cursor-pointer px-2 py-1 rounded hover:bg-zinc-800 transition-colors border border-transparent hover:border-zinc-700 select-none"
-                            title="Click to rename"
+                            onClick={currentRole !== 'VIEWER' ? handleNameClick : undefined}
+                            className={`text-sm font-medium text-zinc-300 px-2 py-1 rounded transition-colors border border-transparent select-none ${currentRole !== 'VIEWER' ? 'hover:text-white cursor-pointer hover:bg-zinc-800 hover:border-zinc-700' : 'cursor-default'}`}
+                            title={currentRole !== 'VIEWER' ? "Click to rename" : "Read Only"}
                         >
                             {currentProjectName || 'Untitled Project'}
                         </div>
+                    )}
+                    {currentRole === 'VIEWER' && (
+                        <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded border border-zinc-700">Read Only</span>
                     )}
                 </div>
             </div>
@@ -213,6 +238,15 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
                         </div>
                     )}
                 </div>
+
+                <button
+                    onClick={() => setIsShareOpen(true)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-100 bg-blue-600 hover:bg-blue-500 rounded-md transition-colors shadow-lg shadow-blue-500/20"
+                >
+                    <Share2 size={14} />
+                    Share
+                </button>
+
                 <button
                     onClick={handleImportClick}
                     className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors"
@@ -316,6 +350,16 @@ export default function EditorNavbar({ projectId }: EditorNavbarProps) {
                 </div>
 
             </div>
+
+            {/* Modals */}
+            {projectId && (
+                <ShareModal
+                    isOpen={isShareOpen}
+                    onClose={() => setIsShareOpen(false)}
+                    projectId={projectId}
+                    currentUserRole={currentRole}
+                />
+            )}
         </nav>
     );
 }

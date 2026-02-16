@@ -21,10 +21,20 @@ export async function GET(
     const { id } = await props.params;
 
     try {
-        const project = await prisma.project.findUnique({
+        // Check for project ownership OR collaboration
+        const project = await prisma.project.findFirst({
             where: {
                 id,
-                userId: session.user.id,
+                OR: [
+                    { userId: session.user.id },
+                    {
+                        collaborators: {
+                            some: {
+                                userId: session.user.id
+                            }
+                        }
+                    }
+                ]
             },
             include: {
                 tables: {
@@ -33,6 +43,9 @@ export async function GET(
                     }
                 },
                 relations: true,
+                collaborators: {
+                    where: { userId: session.user.id }
+                }
             },
         });
 
@@ -40,10 +53,16 @@ export async function GET(
             return new NextResponse('Project not found', { status: 404 });
         }
 
+        // Determine effective role
+        const isOwner = project.userId === session.user.id;
+        const collaborator = project.collaborators[0];
+        const role = isOwner ? 'OWNER' : (collaborator?.role || 'VIEWER');
+
         const formattedProject = {
             ...project,
             createdAt: project.createdAt.toISOString(),
             lastEdited: project.lastEdited.toISOString(),
+            role, // Send role to frontend
             tables: project.tables.map((table: any) => ({
                 ...table,
                 position: { x: table.x, y: table.y },
@@ -72,13 +91,26 @@ export async function PUT(
     const { name, tables, relations, color, databaseType } = body;
 
     try {
-        // Verify ownership
-        const existingProject = await prisma.project.findUnique({
-            where: { id, userId: session.user.id },
+        // Verify ownership OR editor access
+        const project = await prisma.project.findFirst({
+            where: {
+                id,
+                OR: [
+                    { userId: session.user.id },
+                    {
+                        collaborators: {
+                            some: {
+                                userId: session.user.id,
+                                role: 'EDITOR'
+                            }
+                        }
+                    }
+                ]
+            },
         });
 
-        if (!existingProject) {
-            return new NextResponse('Project not found', { status: 404 });
+        if (!project) {
+            return new NextResponse('Project not found or unauthorized', { status: 404 });
         }
 
         // Transaction to update everything safely

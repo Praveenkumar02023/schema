@@ -18,6 +18,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   projects      Project[] // Relation to Projects
+  collaborations Collaborator[]
 }
 
 model Account {
@@ -67,8 +68,32 @@ model Project {
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
+  // Collaborative Features
+  viewToken    String?  @unique // Token for public read-only access
+  editToken    String?  @unique // Token for public edit access
+  collaborators Collaborator[]
+
   tables       Table[]
   relations    Relation[]
+}
+
+model Collaborator {
+  id        String      @id @default(cuid())
+  role      ProjectRole @default(VIEWER)
+  createdAt DateTime    @default(now())
+  
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  projectId String
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+
+enum ProjectRole {
+  VIEWER
+  EDITOR
 }
 
 model Table {
