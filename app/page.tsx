@@ -518,6 +518,7 @@ export default function Home() {
       </section>
 
       {/* Pricing Section - Comparison Table Redesign */}
+      {false && (
       <section className="py-32 bg-zinc-950 relative overflow-hidden" id="pricing">
         {/* Blueish Ambience */}
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
@@ -657,6 +658,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Database Integration Section */}
       <section className="py-32 bg-zinc-950 relative border-t border-zinc-900 overflow-hidden">
