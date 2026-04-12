@@ -1,10 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SchemaStudio (drawdb)
 
-## Getting Started
+SchemaStudio is a visual database design and data modeling tool built for team collaboration. It provides an intuitive, interactive canvas to construct entity-relationship (ER) diagrams, manage database schemas, and visualize relationships between tables.
 
-First, run the development server:
+## 🚀 Key Features
+
+- **Visual ER Diagram Builder**: Drag-and-drop interactive canvas powered by React Flow (`@xyflow/react`).
+- **Real-Time Modeling**: Add tables, define columns, assign primary keys, nullability, and data types seamlessly.
+- **Relational Integrity**: Visually draw relationships (1-1, 1-N, N-N) directly between tables and columns.
+- **State History**: Robust local state management with undo/redo capabilities using `zustand`.
+- **Project Collaboration**: Role-based access control (OWNER, EDITOR, VIEWER) allowing teams to safely view or co-edit database schemas.
+- **Secure Authentication**: Built with NextAuth.js to handle user sessions and OAuth flows (e.g., Google authentication).
+- **Persistent Storage**: Fully integrated with PostgreSQL using Prisma ORM.
+
+## 🛠️ Technology Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Visual Canvas**: React Flow (`@xyflow/react`)
+- **State Management**: Zustand
+- **Database**: PostgreSQL (Prisma ORM)
+- **Authentication**: NextAuth.js
+
+## 📂 Project Structure
+
+- `/app` - Next.js App Router entry points (pages, layouts, API routes).
+- `/components` - Reusable UI components.
+- `/prisma` - Database schema definition (`schema.prisma`).
+- `/store` - Zustand stores for schema state (`useSchemaStore.ts`) and project state (`useProjectStore.ts`).
+
+## ⚙️ Getting Started
+
+### Prerequisites
+
+Ensure you have Node.js 20+ and npm/yarn/pnpm/bun installed.
+
+### 1. Configure Environment Variables
+
+Create a `.env.local` file at the root of the project:
+
+```env
+# Database configuration (PostgreSQL)
+DATABASE_URL="postgresql://user:password@host:port/database"
+
+# NextAuth Configuration
+NEXTAUTH_SECRET="your_nextauth_secret_token"
+GOOGLE_CLIENT_ID="your_google_client_id"
+GOOGLE_CLIENT_SECRET="your_google_client_secret"
+```
+
+### 2. Setup Database & Start Server
+
+Run the development server:
 
 ```bash
+# Generate Prisma client and push schema
+npx prisma generate
+npx prisma db push
+
+# Start Next.js
 npm run dev
 # or
 yarn dev
@@ -16,21 +70,15 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📄 Database Models Overview
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **User / Account / Session**: NextAuth authentication models.
+- **Project**: Represents a database schema diagram workspace.
+- **Collaborator**: Manages Project Role-Based Access Control (VIEWER, EDITOR).
+- **Table**: Represents an SQL table on the canvas.
+- **Column**: Represents a column within a Table.
+- **Relation**: Represents links (foreign keys) between tables/columns.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).*
